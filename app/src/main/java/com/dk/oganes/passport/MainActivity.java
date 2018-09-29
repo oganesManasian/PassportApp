@@ -35,6 +35,12 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /** Ooen Camera activity when special button is pressed */
+    public void openCamera(View view) {
+        Intent intent = new Intent(this, CameraActivity.class);
+        startActivity(intent);
+    }
+
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
