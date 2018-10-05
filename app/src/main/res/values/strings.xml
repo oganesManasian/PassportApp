@@ -7,5 +7,6 @@
     <string name="intro1">Applied math department</string>
     <string name="intro2">Peter the Great St. Petersburg Politechnic University</string>
     <string name="intro3">Welcome to PassportApp</string>
+    <string name="applied_math_logo">applied_math_logo</string>
 
 </resources>
