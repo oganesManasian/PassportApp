@@ -808,21 +808,14 @@ public class AppIntro
     m_timeState += deltaTimeMs;
   }		// func
 
-  public boolean	onTouch(int x, int y, int touchType)
+  public boolean onTouch(int x, int y, int touchType)
   {
     if (touchType != AppIntro.TOUCH_DOWN)
       return false;
 
-    int stateNext;
-    if (ActivityMain.APP_RUN_MODE)
-      stateNext = ActivityMain.VIEW_PLAY;
-    else
-      stateNext = ActivityMain.VIEW_MENU;
-
     if (m_rectBtnStart.contains(x,  y))
     {
-      m_ctx.setMode(ActivityMain.MODE_SOURCE_SHAPE);
-      m_ctx.setView(stateNext);
+      m_ctx.setView(ActivityMain.VIEW_CAMERA);
       return false;
     }
 
@@ -836,9 +829,6 @@ public class AppIntro
         return false;
       }
     }
-    // check simple click => switch to next view
-    //m_ctx.setMode(ActivityMain.MODE_SOURCE_SHAPE);
-    //m_ctx.setView(stateNext);
     return true;
   }	// onTouch
 

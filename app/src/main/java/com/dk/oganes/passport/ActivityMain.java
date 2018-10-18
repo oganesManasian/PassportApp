@@ -22,12 +22,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     static public final boolean APP_RUN_MODE = false;
 
     public static final int VIEW_INTRO = 0;
-    public static final int VIEW_MENU = 1;
-    public static final int VIEW_PLAY = 2;
-    public static final int VIEW_CAMERA = 3;
+    public static final int VIEW_CAMERA = 1;
 
-    public static final int MODE_SOURCE_SHAPE = 0;
-    public static final int MODE_KNACK_PACK = 1;
 
     // *************************************************
     // DATA
@@ -36,20 +32,16 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     int m_modeCur = -1;
 
     private AppIntro m_appIntro;
-    private AppMenu m_appMenu;
-    private AppPlay m_appPlay;
     private AppCamera m_appCamera;
 
     private ViewIntro m_viewIntro;
-    private ViewMenu m_viewMenu;
-    private ViewPlay m_viewPlay;
     private ViewCamera m_viewCamera;
 
     // screen dim
     private int m_screenW;
     private int m_screenH;
 
-    private String m_log = "KP2D";
+    private String m_log = "Passport";
 
     // *************************************************
     // METHODS
@@ -88,10 +80,6 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         }
         // Create application intro
         m_appIntro = new AppIntro(this, language);
-        // Create application menu
-        m_appMenu = new AppMenu(this, language);
-        // Create application play
-        m_appPlay = new AppPlay(this, language);
         // Create application camera
         m_appCamera = new AppCamera(this, language);
         // Create view
@@ -102,20 +90,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         return m_appIntro;
     }
 
-    public AppMenu getAppMenu() {
-        return m_appMenu;
-    }
-
-    public AppPlay getAppPlay() {
-        return m_appPlay;
-    }
-
     public AppCamera getAppCamera() {
         return m_appCamera;
-    }
-
-    public ViewIntro getViewIntro() {
-        return m_viewIntro;
     }
 
     public int getScreenWidth() {
@@ -124,11 +100,6 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
 
     public int getScreenHeight() {
         return m_screenH;
-    }
-
-    public void setMode(int mode) {
-        m_modeCur = mode;
-        m_appPlay.setMode(mode);
     }
 
     public int getView() {
@@ -146,18 +117,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             m_viewIntro = new ViewIntro(this);
             setContentView(m_viewIntro);
         }
-        if (m_viewCur == VIEW_MENU) {
-            m_viewMenu = new ViewMenu(this);
-            Log.d(m_log, "Switch to m_viewMenu");
-            setContentView(m_viewMenu);
-            m_viewMenu.start();
-        }
-        if (m_viewCur == VIEW_PLAY) {
-            m_viewPlay = new ViewPlay(this);
-            Log.d(m_log, "Switch to m_viewPlay");
-            setContentView(m_viewPlay);
-            m_viewPlay.start();
-        }
+
         if (m_viewCur == VIEW_CAMERA) {
             m_viewCamera = new ViewCamera(this);
             Log.d(m_log, "Switch to m_viewCamera");
@@ -197,10 +157,6 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
 
         if (m_viewCur == VIEW_INTRO)
             return m_viewIntro.onTouch(x, y, touchType);
-        if (m_viewCur == VIEW_MENU)
-            return m_viewMenu.onTouch(x, y, touchType);
-        if (m_viewCur == VIEW_PLAY)
-            return m_viewPlay.onTouch(x, y, touchType);
         if (m_viewCur == VIEW_CAMERA)
             return m_viewCamera.onTouch(x, y, touchType);
         return true;
@@ -208,31 +164,19 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
 
     public boolean onKeyDown(int keyCode, KeyEvent evt) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (m_viewCur == VIEW_MENU) {
+            if (m_viewCur == VIEW_CAMERA) {
                 setView(VIEW_INTRO);
-                return true;
-            }
-            if (m_viewCur == VIEW_PLAY) {
-                if (APP_RUN_MODE)
-                    setView(VIEW_INTRO);
-                else
-                    setView(VIEW_MENU);
                 return true;
             }
             //Log.d("DCT", "Back key pressed");
         }
-        boolean ret = super.onKeyDown(keyCode, evt);
-        return ret;
+        return super.onKeyDown(keyCode, evt);
     }
 
     protected void onResume() {
         super.onResume();
         if (m_viewCur == VIEW_INTRO)
             m_viewIntro.start();
-        if (m_viewCur == VIEW_MENU)
-            m_viewMenu.start();
-        if (m_viewCur == VIEW_PLAY)
-            m_viewPlay.start();
         if (m_viewCur == VIEW_CAMERA)
             m_viewCamera.start();
         //Log.d(m_log, "App onResume");
@@ -242,10 +186,6 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         // stop anims
         if (m_viewCur == VIEW_INTRO)
             m_viewIntro.stop();
-        if (m_viewCur == VIEW_MENU)
-            m_viewMenu.stop();
-        if (m_viewCur == VIEW_PLAY)
-            m_viewPlay.stop();
         if (m_viewCur == VIEW_CAMERA)
             m_viewCamera.stop();
         // complete system
@@ -254,9 +194,6 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     }
 
     protected void onDestroy() {
-        if (m_viewCur == VIEW_MENU) {
-            //m_viewMenu.onDestroy();
-        }
         super.onDestroy();
         //Log.d("DCT", "App onDestroy");
     }
