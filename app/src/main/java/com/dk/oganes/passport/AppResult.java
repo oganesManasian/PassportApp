@@ -9,16 +9,23 @@ public class AppResult {
     private ActivityMain m_ctx;
     private String recognitionResult;
 
-    private int fontSize = 20;
+    private int fontSize = 40;
     private Paint fontPaint;
     private int color = Color.BLUE;
+
+    private int padX = fontSize;
+    private int padY = 2 * fontSize;
 
     // METHODS
     public AppResult(ActivityMain ctx, int language)
     {
-        fontPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        fontPaint.setTextSize(fontSize);
+        fontPaint = new Paint();
         fontPaint.setColor(color);
+        fontPaint.setStyle(Paint.Style.FILL);
+        fontPaint.setTextSize(fontSize);
+        fontPaint.setTextAlign(Paint.Align.CENTER);
+        fontPaint.setAntiAlias(true);
+
         recognitionResult = "Nothing recognised";
     }
 
@@ -28,6 +35,11 @@ public class AppResult {
 
     public void drawCanvas(Canvas canvas)
     {
+        // Fill white
+        canvas.drawARGB(255, 255, 255, 255);
+        // Move canvas
+        canvas.translate(padX, padY);
+
         canvas.drawText(recognitionResult, 0, 0, fontPaint);
     }
 
