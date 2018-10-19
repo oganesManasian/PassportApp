@@ -9,11 +9,15 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.googlecode.tesseract.android.TessBaseAPI;
+
 public class AppCamera {
     // CONST
     private ActivityMain  m_ctx;
     private Camera mCamera;
     private CameraPreview mPreview;
+
+    private TessBaseAPI tessBaseApi;
 
     // METHODS
     public AppCamera(ActivityMain ctx, int language)

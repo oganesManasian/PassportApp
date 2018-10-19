@@ -2,8 +2,8 @@ package com.dk.oganes.passport;
 
 public class V2d
 {
-  public int	x;
-  public int	y;
+  public int x;
+  public int y;
 
   public int dotProduct(V2d v)
   {

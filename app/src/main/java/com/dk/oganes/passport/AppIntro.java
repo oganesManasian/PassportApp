@@ -178,7 +178,7 @@ public class AppIntro
     }
   }
 
-  public int		getLanguage()
+  public int getLanguage()
   {
     return m_language;
   }
@@ -206,7 +206,7 @@ public class AppIntro
 
   public void drawCanvas(Canvas canvas)
   {
-    m_curTime 		= System.currentTimeMillis();
+    m_curTime = System.currentTimeMillis();
     if (m_prevTime == -1)
       m_prevTime = m_curTime;
     int deltaTimeMs = (int)( m_curTime - m_prevTime);
