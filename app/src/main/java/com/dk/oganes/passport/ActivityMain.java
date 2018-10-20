@@ -124,6 +124,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         m_viewCur = viewID;
         if (m_viewCur == VIEW_INTRO) {
             m_viewIntro = new ViewIntro(this);
+            Log.d(m_log, "Switch to m_viewIntro");
             setContentView(m_viewIntro);
         }
 
@@ -202,7 +203,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             m_viewCamera.start();
         if (m_viewCur == VIEW_RESULT)
             m_viewResult.start();
-        //Log.d(m_log, "App onResume");
+        Log.d(m_log, "App onResume");
     }
 
     protected void onPause() {
@@ -215,7 +216,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             m_viewResult.stop();
         // complete system
         super.onPause();
-        //Log.d(m_log, "App onPause");
+        Log.d(m_log, "App onPause");
     }
 
     protected void onDestroy() {

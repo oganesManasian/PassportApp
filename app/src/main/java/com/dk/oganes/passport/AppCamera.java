@@ -2,8 +2,10 @@ package com.dk.oganes.passport;
 
 
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -15,7 +17,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.googlecode.tesseract.android.TessBaseAPI;
+
+import java.io.IOException;
 
 public class AppCamera {
     // CONST
@@ -23,7 +26,7 @@ public class AppCamera {
     private Camera mCamera;
     private CameraPreview mPreview;
 
-    private TessBaseAPI tessBaseApi;
+    private OCR ocr;
 
     public RectF m_rectBtnTakePhoto;
     public String m_strTakePhoto;
@@ -31,8 +34,9 @@ public class AppCamera {
     public Paint m_paintTextButton;
 
     // METHODS
-    public AppCamera(ActivityMain ctx, int language)
-    {
+    public AppCamera(ActivityMain ctx, int language){
+        m_ctx = ctx;
+
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
@@ -41,6 +45,10 @@ public class AppCamera {
         //FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         //preview.addView(mPreview);
 
+        // Init OCR
+        ocr = new OCR(ctx);
+
+        // Scan button
         m_rectBtnTakePhoto = new RectF();
         m_paintRectButton = new Paint();
         m_paintRectButton.setStyle(Paint.Style.FILL);
@@ -53,10 +61,17 @@ public class AppCamera {
         m_paintTextButton.setTextAlign(Paint.Align.CENTER);
         m_paintTextButton.setAntiAlias(true);
 
+        // Load name for scan button
         Resources res = ctx.getResources();
         String strPackage = ctx.getPackageName();
         m_strTakePhoto = res.getString(res.getIdentifier("str_take_photo", "string", strPackage ));
     }
+
+    @Override
+    public void finalize() throws Throwable {
+        ocr.endOCR();
+    }
+
 
 
     /** A safe way to get an instance of the Camera object. */
