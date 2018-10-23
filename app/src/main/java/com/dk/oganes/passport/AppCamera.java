@@ -2,7 +2,6 @@ package com.dk.oganes.passport;
 
 
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,25 +12,33 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.hardware.Camera;
 import android.net.Uri;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.FrameLayout;
+import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 
 
-import java.io.IOException;
+import java.io.File;
+
+import static android.provider.AlarmClock.EXTRA_MESSAGE;
 
 public class AppCamera {
+    private static final String TAG = "APP_CAMERA";
+    private static final String OCR_FILENAME = "ocrPhotoFile";
     // CONST
     private ActivityMain  m_ctx;
+
     private Camera mCamera;
     private CameraPreview mPreview;
-
-    private OCR ocr;
-
-    public RectF m_rectBtnTakePhoto;
-    public String m_strTakePhoto;
-    public Paint m_paintRectButton;
-    public Paint m_paintTextButton;
+    private String m_ocrFilePath;
+    private File m_imagePath;
+    private OCR m_ocr;
+    private RectF m_rectBtnScan;
+    private String m_strTakePhoto;
+    private Paint m_paintRectButton;
+    private Paint m_paintTextButton;
+    private String instruction;
+    private Paint fontPaint;
+    private int textStartX = 50;
+    private int textStartY = 100;
 
     // METHODS
     public AppCamera(ActivityMain ctx, int language){
@@ -40,16 +47,19 @@ public class AppCamera {
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
+        m_imagePath = new File(m_ctx.getFilesDir(), "images");
+        //m_imagePath = m_ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // TODO delete
+
         // Create our Preview view and set it as the content of our activity.
-        //mPreview = new CameraPreview(m_ctx, mCamera);
-        //FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        //preview.addView(mPreview);
+        // mPreview = new CameraPreview(m_ctx, mCamera);
+        // FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        // preview.addView(mPreview);
 
         // Init OCR
-        ocr = new OCR(ctx);
+        m_ocr = new OCR(ctx);
 
         // Scan button
-        m_rectBtnTakePhoto = new RectF();
+        m_rectBtnScan = new RectF();
         m_paintRectButton = new Paint();
         m_paintRectButton.setStyle(Paint.Style.FILL);
         m_paintRectButton.setAntiAlias(true);
@@ -57,22 +67,50 @@ public class AppCamera {
         m_paintTextButton = new Paint();
         m_paintTextButton.setColor(0xFF000088);
         m_paintTextButton.setStyle(Paint.Style.FILL);
-        m_paintTextButton.setTextSize(20.0f);
+        m_paintTextButton.setTextSize(40.0f);
         m_paintTextButton.setTextAlign(Paint.Align.CENTER);
         m_paintTextButton.setAntiAlias(true);
+
+        fontPaint = new Paint();
+        fontPaint.setColor(Color.BLACK);
+        fontPaint.setStyle(Paint.Style.FILL);
+        fontPaint.setTextSize(40.0f);
+        //fontPaint.setTextAlign(Paint.Align.CENTER); // Moving text to the left WHY?
+        fontPaint.setAntiAlias(true);
 
         // Load name for scan button
         Resources res = ctx.getResources();
         String strPackage = ctx.getPackageName();
-        m_strTakePhoto = res.getString(res.getIdentifier("str_take_photo", "string", strPackage ));
+        m_strTakePhoto = res.getString(res.getIdentifier("str_scan", "string", strPackage ));
+        instruction = res.getString(res.getIdentifier("instruction", "string", strPackage));
     }
 
     @Override
     public void finalize() throws Throwable {
-        ocr.endOCR();
+        m_ocr.endOCR();
     }
 
+    private void dispatchTakePictureIntent() {
+        try {
+            Utils.prepareDirectory(m_imagePath.toString());
 
+            // Create temp file for ocr file
+            File image = File.createTempFile(OCR_FILENAME,".jpg", m_imagePath);
+            //image = new File(m_imagePath.toString(), OCR_FILENAME + ".jpg"); // TODO delete
+
+            m_ocrFilePath = image.getAbsolutePath();
+            Uri outputFileUri = FileProvider.getUriForFile(m_ctx,
+                    "com.dk.oganes.passport.fileprovider", image);
+            final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+
+            if (takePictureIntent.resolveActivity(m_ctx.getPackageManager()) != null) {
+                m_ctx.startActivityForResult(takePictureIntent, Utils.REQUEST_IMAGE_CAPTURE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(){
@@ -88,6 +126,19 @@ public class AppCamera {
 
     public void drawCanvas(Canvas canvas)
     {
+        // Fill screen white
+        canvas.drawRGB(255, 255, 255);
+
+        // Draw instruction
+        // TODO draw depending screen size and orientation
+        int x = textStartX;
+        int y = textStartY;
+        for (String line: instruction.split("\n")) {
+            canvas.drawText(line, x, y, fontPaint);
+            y += fontPaint.descent() - fontPaint.ascent();
+        }
+
+        // Draw scan button
         int scrW = canvas.getWidth();
         int scrH = canvas.getHeight();
         int scrCenterX = scrW >> 1;
@@ -102,16 +153,24 @@ public class AppCamera {
         if (scrH > scrW)
         {
             // vertical buttons layout
-            m_rectBtnTakePhoto.set(scrCenterX - bwHalf,
+            m_rectBtnScan.set(scrCenterX - bwHalf,
                     scrH - bh * 2, scrCenterX + bwHalf, scrH - bh);
         }
         else
         {
             // horizontal buttons layout
-            m_rectBtnTakePhoto.set(scrCenterX - bwHalf,
+            m_rectBtnScan.set(scrCenterX - bwHalf,
                     scrH - bh, scrCenterX + bwHalf, scrH);
         }
-        drawButton(canvas, m_rectBtnTakePhoto, m_strTakePhoto, 0x92DCFE, 0x1e80B0, 255);
+        drawButton(canvas, m_rectBtnScan, m_strTakePhoto, 0x92DCFE, 0x1e80B0, 255);
+
+        // TODO set Frame layout or camera preview
+        //FrameLayout preview = new FrameLayout(m_ctx);
+        //preview.setForegroundGravity(77);
+        //FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        //preview.addView(mPreview);
+
+        // TODO draw instruction
     }
 
     private void drawButton(Canvas canvas, RectF rectIn, String str, int color1, int color2, int alpha)
@@ -147,6 +206,17 @@ public class AppCamera {
 
     public boolean onTouch(int x, int y, int touchType)
     {
+        if (m_rectBtnScan.contains(x,  y))
+        {
+            dispatchTakePictureIntent();
+            m_ctx.setView(ActivityMain.VIEW_RESULT);
+            return false;
+        }
         return true;
-    }	// onTouch
+    }
+
+    public void doOCR() {
+        m_ocr.doOCR(m_ocrFilePath);
+    }
+
 }

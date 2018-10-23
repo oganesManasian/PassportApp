@@ -1,6 +1,7 @@
 package com.dk.oganes.passport;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,10 +9,14 @@ import android.view.*;
 import android.graphics.*;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
-import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Locale;
 
+// TODO delete c++ native libs
+// TODO Rotate photo on 90 degrees
+// TODO Launch on 16 sdk on virtual device
+// TODO Refactor private variables
 
 public class ActivityMain extends Activity implements View.OnTouchListener, OnCompletionListener {
 
@@ -19,7 +24,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     // CONST
     // ********************************************
 
-    static public final boolean APP_RUN_MODE = false;
+    private static final String TAG = "ACTIVITY_MAIN";
 
     public static final int VIEW_INTRO = 0;
     public static final int VIEW_CAMERA = 1;
@@ -132,6 +137,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             m_viewCamera = new ViewCamera(this);
             Log.d(m_log, "Switch to m_viewCamera");
             setContentView(m_viewCamera);
+            //setContentView(R.layout.camera_preview);
             m_viewCamera.start();
         }
 
@@ -227,5 +233,18 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     public void onConfigurationChanged(Configuration confNew) {
         super.onConfigurationChanged(confNew);
         m_viewIntro.onConfigurationChanged(confNew);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "Activity code: " + String.valueOf(requestCode) +
+        " result: " + String.valueOf(resultCode));
+        // Taking photo
+        if (requestCode == Utils.REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            getAppCamera().doOCR();
+        } else {
+            // Simple feedback about an operation in a small popup
+            Toast.makeText(this, "ERROR: Image was not obtained.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

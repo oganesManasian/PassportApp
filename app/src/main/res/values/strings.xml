@@ -9,5 +9,6 @@
     <string name="str_toweb">To web site</string>
     <string name="str_start">Start</string>
     <string name="str_show">Show</string>
-    <string name="str_take_photo">Scan</string>
+    <string name="str_scan">Scan</string>
+    <string name="instruction">Please place your phone horizontally\nwhile taking photo</string>
 </resources>

@@ -10,7 +10,7 @@ import java.io.OutputStream;
 public class Utils {
     private static final String TAG = "UTILS";
     public static final int REQUEST_IMAGE_CAPTURE = 1;
-    
+
     public static void prepareDirectory(String path) {
         File dir = new File(path);
         if (!dir.exists()) {

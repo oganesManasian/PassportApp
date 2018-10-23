@@ -8,5 +8,6 @@
     <string name="str_toweb">На сайт</string>
     <string name="str_start">Старт</string>
     <string name="str_show">Показать</string>
-    <string name="str_take_photo">Сканировать</string>
+    <string name="str_scan">Сканировать</string>
+    <string name="instruction">Пожалуйста расположите телефон горизонтально\nво время съемки</string>
 </resources>

@@ -4,19 +4,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
-import java.io.IOException;
 
 public class AppResult {
     // CONST
     private ActivityMain m_ctx;
     private String recognitionResult;
 
-    private int fontSize = 40;
     private Paint fontPaint;
-    private int color = Color.BLACK;
 
-    private int padX = fontSize;
-    private int padY = 2 * fontSize;
+    private int textStartX = 50;
+    private int textStartY = 100;
 
     // METHODS
     public AppResult(ActivityMain ctx, int language)
@@ -24,9 +21,9 @@ public class AppResult {
         m_ctx = ctx;
 
         fontPaint = new Paint();
-        fontPaint.setColor(color);
+        fontPaint.setColor(Color.BLACK);
         fontPaint.setStyle(Paint.Style.FILL);
-        fontPaint.setTextSize(fontSize);
+        fontPaint.setTextSize(40f);
         //fontPaint.setTextAlign(Paint.Align.CENTER); // Moving text to the left WHY?
         fontPaint.setAntiAlias(true);
 
@@ -40,11 +37,19 @@ public class AppResult {
     public void drawCanvas(Canvas canvas)
     {
         // Fill screen white
-        canvas.drawARGB(255, 255, 255, 255);
+        canvas.drawRGB(255, 255, 255);
+        //canvas.drawRGB(0, 0, 0);
         // Move canvas
-        canvas.translate(padX, padY);
+        //canvas.translate(padX, padY);
+
         // Draw scan button
-        canvas.drawText(recognitionResult, 0, 0, fontPaint);
+        // TODO draw depending screen size and orientation
+        int x = textStartX;
+        int y = textStartY;
+        for (String line: recognitionResult.split("\n")) {
+            canvas.drawText(line, x, y, fontPaint);
+            y += fontPaint.descent() - fontPaint.ascent();
+        }
     }
 
     public boolean onTouch(int x, int y, int touchType)

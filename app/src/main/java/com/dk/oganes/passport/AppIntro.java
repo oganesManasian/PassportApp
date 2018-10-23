@@ -130,8 +130,7 @@ public class AppIntro {
         m_paintLeafFill.setAntiAlias(true);
 
         m_paintTextWhite = new Paint();
-        //m_paintTextWhite.setColor(0xFFFFFFFF);
-        m_paintTextWhite.setColor(0x00000000);
+        m_paintTextWhite.setColor(0xFFFFFFFF);
         m_paintTextWhite.setAntiAlias(true);
         m_paintTextWhite.setStyle(Style.FILL);
         m_paintTextWhite.setTextSize(24.0f);
@@ -142,8 +141,7 @@ public class AppIntro {
         m_paintBitmap.setStyle(Style.FILL);
 
         m_paintTextYell = new Paint();
-        //m_paintTextYell.setColor(0xFFFFFF00);
-        m_paintTextYell.setColor(0x00000000);
+        m_paintTextYell.setColor(0xFFFFFF00);
         m_paintTextYell.setAntiAlias(true);
         m_paintTextYell.setStyle(Style.FILL);
         m_paintTextYell.setTextSize(14.0f);
@@ -337,8 +335,7 @@ public class AppIntro {
 
 
     private void drawCircleInc(Canvas canvas, int deltaTimeMs) {
-        canvas.drawRGB(255, 255, 255);
-        //canvas.drawRGB(0, 0, 0);F
+        canvas.drawRGB(0, 0, 0);
 
         float rAnim = (float) m_timeState / TIME_CIRCLE_INC;
         if (rAnim > 1.0f) rAnim = 1.0f;
@@ -368,8 +365,7 @@ public class AppIntro {
     }
 
     private void drawAppleEmptyInc(Canvas canvas, int deltaTimeMs) {
-        canvas.drawRGB(255, 255, 255);
-        //canvas.drawRGB(0, 0, 0);
+        canvas.drawRGB(0, 0, 0);
 
         // Setup apple shape (outline)
         float rAnim = (float) m_timeState / TIME_APPLE_INC;
@@ -400,8 +396,7 @@ public class AppIntro {
     }        // func
 
     private void drawAppleFillOpacity(Canvas canvas, int deltaTimeMs) {
-        canvas.drawRGB(255, 255, 255);
-        //canvas.drawRGB(0, 0, 0);
+        canvas.drawRGB(0, 0, 0);
 
         // Setup apple shape (outline)
         float rAnim = (float) m_timeState / TIME_APPLE_INC;
@@ -437,8 +432,7 @@ public class AppIntro {
     }        // func
 
     private void drawAppleFillShader(Canvas canvas, int deltaTimeMs) {
-        canvas.drawRGB(255, 255, 255);
-        //canvas.drawRGB(0, 0, 0);
+        canvas.drawRGB(0, 0, 0);
 
         // Setup apple shape (outline)
         float rAnim = (float) m_timeState / TIME_SHADER_COLORED;
@@ -489,8 +483,7 @@ public class AppIntro {
     }        // func
 
     private void drawAppleGraft(Canvas canvas, int deltaTimeMs) {
-        canvas.drawRGB(255, 255, 255);
-        //canvas.drawRGB(0, 0, 0);
+        canvas.drawRGB(0, 0, 0);
 
         // Setup apple shape (outline)
         float rAnim = (float) m_timeState / TIME_SHADER_COLORED;
@@ -563,8 +556,7 @@ public class AppIntro {
     }        // func
 
     private void drawAppleLeaf(Canvas canvas, int deltaTimeMs) {
-        canvas.drawRGB(255, 255, 255);
-        //canvas.drawRGB(0, 0, 0);
+        canvas.drawRGB(0, 0, 0);
 
         // Setup apple shape (outline)
         int tAnim = m_timeState & (TIME_LEAF - 1);
