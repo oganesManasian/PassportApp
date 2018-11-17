@@ -9,7 +9,7 @@ public class AppResult {
     // CONST
     private ActivityMain m_ctx;
     private String recognitionResult;
-
+    private PersonalData personalData;
     private Paint fontPaint;
 
     private int textStartX = 50;
@@ -34,6 +34,10 @@ public class AppResult {
         recognitionResult = str;
     }
 
+    //public void setRecognitionResult(PersonalData personalData) {
+    //    this.personalData = personalData
+    //}
+
     public void drawCanvas(Canvas canvas)
     {
         // Fill screen white
@@ -50,6 +54,7 @@ public class AppResult {
             canvas.drawText(line, x, y, fontPaint);
             y += fontPaint.descent() - fontPaint.ascent();
         }
+        // TODO draw personal data fields
     }
 
     public boolean onTouch(int x, int y, int touchType)

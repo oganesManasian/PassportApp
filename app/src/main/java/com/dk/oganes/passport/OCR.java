@@ -21,13 +21,10 @@ public class OCR {
     private static final String TESSDATA_PATH = "tessdata";
     private static final String TESSDATA_LNG = "ENG";
 
-    private static final String CHARS_TO_DETECT = "0123456789<" +
-            "abcdefghijklmnopqrstuvwxyz" +
-            "ACBDEFGHIJKLMNOPQRSTUVWXYZ";
     private String DATA_PATH;
 
     private TessBaseAPI tessBaseApi;
-
+    private CodeProcessor codeProcessor;
     private int usedRecognition = 0;
 
     public OCR(ActivityMain ctx) {
@@ -49,8 +46,10 @@ public class OCR {
         tessBaseApi.init(DATA_PATH, TESSDATA_LNG);
         //Log.d(TAG, "Training file loaded");
 
+        // Init text handler
+        codeProcessor = new CodeProcessor();
         // EXTRA SETTINGS
-        //tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, CHARS_TO_DETECT);
+        tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, CodeProcessor.CHARS_TO_DETECT);
         //tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_BLACKLIST, "!@#$%^&*()_+=-qwertyuiop[]}{POIU" +
         //        "YTRWQasdASDfghFGHjklJKLl;L:'\"\\|~`xcvXCVbnmBNM,./<>?");
     }
