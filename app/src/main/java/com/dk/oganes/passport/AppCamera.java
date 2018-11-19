@@ -12,6 +12,7 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.hardware.Camera;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 
@@ -47,8 +48,8 @@ public class AppCamera {
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
-        m_imagePath = new File(m_ctx.getFilesDir(), "images");
-        //m_imagePath = m_ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // TODO delete
+        //m_imagePath = new File(m_ctx.getFilesDir(), "images"); // Save in app private dir
+        m_imagePath = m_ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // Save in public dir
 
         // Create our Preview view and set it as the content of our activity.
         // mPreview = new CameraPreview(m_ctx, mCamera);

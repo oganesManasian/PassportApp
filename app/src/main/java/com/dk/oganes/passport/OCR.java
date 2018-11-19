@@ -2,6 +2,7 @@ package com.dk.oganes.passport;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.util.Log;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
@@ -99,16 +100,43 @@ public class OCR {
         copyTessDataFiles(TESSDATA_PATH);
     }
 
+    private void saveBitmap(Bitmap bitmap, String filename) {
+        String path = m_ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString();
+        OutputStream outStream = null;
+        File file = new File(path, filename + ".png");
+        try {
+            outStream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream);
+            outStream.flush();
+            outStream.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void doOCR(String img) {
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             // TODO optumize this parameter
             options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
             Bitmap bitmap = BitmapFactory.decodeFile(img, options);
+            // TODO add image preprocessing
+            // Preprocessing
+            ImageProcessor imageProcessor = new ImageProcessor();
+            Bitmap grayscale = imageProcessor.grayscale(bitmap);
+            bitmap.recycle();
+            Bitmap binarized = imageProcessor.binarize(grayscale);
+            saveBitmap(grayscale, "grayscale"); // For debug
+            grayscale.recycle();
 
-            String result = extractText(bitmap);
+            //https://courses.graphicon.ru/files/courses/vision/2009/cv_2009_02.pdf
+            String result = extractText(binarized);
+            saveBitmap(binarized, "binarized"); // For debug
+            binarized.recycle();
             m_ctx.getAppResult().setRecognitionResult(result);
-
+            // TODO change to:
+            //PersonalData personalData = codeProcessor.extractPersonalData(result);
+            //m_ctx.getAppResult().setRecognitionResult(personalData);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -118,7 +146,6 @@ public class OCR {
         try {
             String result = extractText(bitmap);
             m_ctx.getAppResult().setRecognitionResult(result);
-
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -129,7 +156,7 @@ public class OCR {
         String extractedText = "empty result";
         try {
             extractedText = tessBaseApi.getUTF8Text();
-            Log.d(TAG, "Recognized: " + extractedText);
+            Log.d(TAG, "Recognized:\n" + extractedText);
         } catch (Exception e) {
             Log.e(TAG, "Error in recognizing text.");
         }
