@@ -25,7 +25,7 @@ public class OCR {
     private String DATA_PATH;
 
     private TessBaseAPI tessBaseApi;
-    private CodeProcessor codeProcessor;
+    private PassportCodeProcessor passportCodeProcessor;
     private int usedRecognition = 0;
 
     public OCR(ActivityMain ctx) {
@@ -48,9 +48,9 @@ public class OCR {
         //Log.d(TAG, "Training file loaded");
 
         // Init text handler
-        codeProcessor = new CodeProcessor();
+        passportCodeProcessor = new PassportCodeProcessor();
         // EXTRA SETTINGS
-        tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, CodeProcessor.CHARS_TO_DETECT);
+        tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, PassportCodeProcessor.CHARS_TO_DETECT);
         //tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_BLACKLIST, "!@#$%^&*()_+=-qwertyuiop[]}{POIU" +
         //        "YTRWQasdASDfghFGHjklJKLl;L:'\"\\|~`xcvXCVbnmBNM,./<>?");
     }
@@ -120,31 +120,19 @@ public class OCR {
             // TODO optumize this parameter
             options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
             Bitmap bitmap = BitmapFactory.decodeFile(img, options);
-            // TODO add image preprocessing
-            // Preprocessing
+
+            // Image preprocessing
             ImageProcessor imageProcessor = new ImageProcessor();
             Bitmap grayscale = imageProcessor.grayscale(bitmap);
+            saveBitmap(grayscale, "grayscale"); // For debug
             bitmap.recycle();
             Bitmap binarized = imageProcessor.binarize(grayscale);
-            saveBitmap(grayscale, "grayscale"); // For debug
+            saveBitmap(binarized, "binarized"); // For debug
             grayscale.recycle();
 
             //https://courses.graphicon.ru/files/courses/vision/2009/cv_2009_02.pdf
             String result = extractText(binarized);
-            saveBitmap(binarized, "binarized"); // For debug
             binarized.recycle();
-            m_ctx.getAppResult().setRecognitionResult(result);
-            // TODO change to:
-            //PersonalData personalData = codeProcessor.extractPersonalData(result);
-            //m_ctx.getAppResult().setRecognitionResult(personalData);
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-    }
-
-    public void doOCR(Bitmap bitmap) {
-        try {
-            String result = extractText(bitmap);
             m_ctx.getAppResult().setRecognitionResult(result);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
