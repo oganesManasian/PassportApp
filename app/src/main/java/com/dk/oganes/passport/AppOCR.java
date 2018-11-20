@@ -3,7 +3,9 @@ package com.dk.oganes.passport;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
@@ -116,13 +118,24 @@ public class AppOCR {
 
     public void doOCR() {
         try {
+            // TODO log time for processing image and ocr
+            long startTime;
+            long elapsedTime;
+
+            //Image decoding
+            startTime = SystemClock.uptimeMillis();
+
             String OCRFilePath = m_ctx.getAppCamera().getOCRFilePath();
             BitmapFactory.Options options = new BitmapFactory.Options();
             // TODO optumize this parameter
-            options.inSampleSize = 1; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
+            options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
             Bitmap bitmap = BitmapFactory.decodeFile(OCRFilePath, options);
 
+            elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
+            Log.d(TAG, "Decoding took: " + elapsedTime + "s\n");
             // Image preprocessing
+            startTime = SystemClock.uptimeMillis();
+
             ImageProcessor imageProcessor = new ImageProcessor();
             Bitmap grayscale = imageProcessor.grayscale(bitmap);
             saveBitmap(grayscale, "grayscale"); // For debug
@@ -131,9 +144,18 @@ public class AppOCR {
             saveBitmap(binarized, "binarized"); // For debug
             grayscale.recycle();
 
-            //https://courses.graphicon.ru/files/courses/vision/2009/cv_2009_02.pdf
+            elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
+            Log.d(TAG, "Image processing took: " + elapsedTime + "s\n");
+
+            // Extracting text
+            startTime = SystemClock.uptimeMillis();
+
             String result = extractText(binarized);
             binarized.recycle();
+
+            elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
+            Log.d(TAG, "Extracting text took: " + elapsedTime + "s\n");
+
             m_ctx.getAppResult().setRecognitionResult(result);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
