@@ -19,19 +19,16 @@ import android.support.v4.content.FileProvider;
 
 import java.io.File;
 
-import static android.provider.AlarmClock.EXTRA_MESSAGE;
-
 public class AppCamera {
     private static final String TAG = "APP_CAMERA";
     private static final String OCR_FILENAME = "ocrPhotoFile";
     // CONST
     private ActivityMain  m_ctx;
 
-    private Camera mCamera;
-    private CameraPreview mPreview;
+    //private Camera mCamera;
+    //private CameraPreview mPreview;
     private String m_ocrFilePath;
     private File m_imagePath;
-    private OCR m_ocr;
     private RectF m_rectBtnScan;
     private String m_strTakePhoto;
     private Paint m_paintRectButton;
@@ -46,7 +43,7 @@ public class AppCamera {
         m_ctx = ctx;
 
         // Create an instance of Camera
-        mCamera = getCameraInstance();
+        //mCamera = getCameraInstance();
 
         //m_imagePath = new File(m_ctx.getFilesDir(), "images"); // Save in app private dir
         m_imagePath = m_ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // Save in public dir
@@ -56,8 +53,6 @@ public class AppCamera {
         // FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         // preview.addView(mPreview);
 
-        // Init OCR
-        m_ocr = new OCR(ctx);
 
         // Scan button
         m_rectBtnScan = new RectF();
@@ -88,7 +83,6 @@ public class AppCamera {
 
     @Override
     public void finalize() throws Throwable {
-        m_ocr.endOCR();
     }
 
     private void dispatchTakePictureIntent() {
@@ -216,8 +210,14 @@ public class AppCamera {
         return true;
     }
 
-    public void doOCR() {
-        m_ocr.doOCR(m_ocrFilePath);
+    public String getOCRFilePath() {
+        boolean testMode = true; // TODO make opportunity to turn testMode on from app
+        if (testMode) {
+            String fileName = "1.jpg";
+            String DATA_PATH = m_ctx.getApplicationContext().getFilesDir().toString() + "/TesseractSample/";
+            return DATA_PATH + "/" + fileName;
+        }
+        else
+            return m_ocrFilePath;
     }
-
 }

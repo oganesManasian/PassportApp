@@ -15,8 +15,8 @@ import java.io.OutputStream;
 
 
 
-public class OCR {
-    private static final String TAG = "OCR";
+public class AppOCR {
+    private static final String TAG = "AppOCR";
     private ActivityMain  m_ctx;
     //private static final String DATA_PATH = Environment.getExternalStorageDirectory().toString() + "/TesseractSample/";
     private static final String TESSDATA_PATH = "tessdata";
@@ -28,7 +28,7 @@ public class OCR {
     private PassportCodeProcessor passportCodeProcessor;
     private int usedRecognition = 0;
 
-    public OCR(ActivityMain ctx) {
+    public AppOCR(ActivityMain ctx) {
         m_ctx = ctx;
         // Init tesseract
         try {
@@ -114,12 +114,13 @@ public class OCR {
         }
     }
 
-    public void doOCR(String img) {
+    public void doOCR() {
         try {
+            String OCRFilePath = m_ctx.getAppCamera().getOCRFilePath();
             BitmapFactory.Options options = new BitmapFactory.Options();
             // TODO optumize this parameter
-            options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
-            Bitmap bitmap = BitmapFactory.decodeFile(img, options);
+            options.inSampleSize = 1; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
+            Bitmap bitmap = BitmapFactory.decodeFile(OCRFilePath, options);
 
             // Image preprocessing
             ImageProcessor imageProcessor = new ImageProcessor();

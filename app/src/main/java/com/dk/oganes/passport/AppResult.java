@@ -45,10 +45,9 @@ public class AppResult {
         // TODO draw depending screen size and orientation
         int x = textStartX;
         int y = textStartY;
-        //for (String line: recognitionResult.split("\n")) {
-        //    canvas.drawText(line, x, y, fontPaint);
-        //    y += fontPaint.descent() - fontPaint.ascent();
-        //}
+        String IntroLine = "Recognized data:";
+        canvas.drawText(IntroLine, x, y, fontPaint);
+        y += fontPaint.descent() - fontPaint.ascent();
 
         // Draw personal data fields
         if (personalData != null) {

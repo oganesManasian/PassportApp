@@ -40,6 +40,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     private AppIntro m_appIntro;
     private AppCamera m_appCamera;
     private AppResult m_appResult;
+    private AppOCR m_appOCR;
 
     private ViewIntro m_viewIntro;
     private ViewCamera m_viewCamera;
@@ -92,6 +93,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         m_appCamera = new AppCamera(this, language);
         // Create application result
         m_appResult = new AppResult(this, language);
+        // Create OCR application
+        m_appOCR = new AppOCR(this);
         // Create view
         setView(VIEW_INTRO);
     }
@@ -106,6 +109,10 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
 
     public AppResult getAppResult() {
         return m_appResult;
+    }
+
+    public AppOCR getAppOCR() {
+        return m_appOCR;
     }
 
     public int getScreenWidth() {
@@ -227,7 +234,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
 
     protected void onDestroy() {
         super.onDestroy();
-        //Log.d("DCT", "App onDestroy");
+        m_appOCR.endOCR();
+        Log.d("DCT", "App onDestroy");
     }
 
     public void onConfigurationChanged(Configuration confNew) {
@@ -241,7 +249,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         " result: " + String.valueOf(resultCode));
         // Taking photo
         if (requestCode == Utils.REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            getAppCamera().doOCR();
+            getAppOCR().doOCR();
         } else {
             // Simple feedback about an operation in a small popup
             Toast.makeText(this, "ERROR: Image was not obtained.", Toast.LENGTH_SHORT).show();
