@@ -56,6 +56,7 @@ public class ImageProcessor {
 
         // Apply threshold
         double threshold = meanColor / width / height;
+        threshold *= 1.25; // Increasing threshold
         Log.d(TAG, "Threshold: " + String.valueOf(threshold));
         for (int x = 0; x < width; ++x)
             for (int y = 0; y < height; ++y) {

@@ -19,7 +19,7 @@ gen/
 out/
 
 # Test images
-*.jpg
+# *.jpg
 
 # Local configuration file (sdk path, etc)
 local.properties
