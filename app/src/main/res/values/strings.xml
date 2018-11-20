@@ -10,5 +10,10 @@
     <string name="str_start">Start</string>
     <string name="str_show">Show</string>
     <string name="str_scan">Scan</string>
-    <string name="instruction">Please place your phone horizontally\nwhile taking photo</string>
+    <string name="instruction">
+        Recommendations for scanning\n
+        1) Please place your phone horizontally\nwhile taking photo\n
+        2) Focus device on passport\n
+        3) Make there were not any shadows on passport\n
+    </string>
 </resources>

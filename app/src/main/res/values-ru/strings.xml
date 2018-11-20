@@ -9,5 +9,10 @@
     <string name="str_start">Старт</string>
     <string name="str_show">Показать</string>
     <string name="str_scan">Сканировать</string>
-    <string name="instruction">Пожалуйста расположите телефон горизонтально\nво время съемки</string>
+    <string name="instruction">
+        Рекомендации к сканированию:\n
+        1) Пожалуйста расположите телефон горизонтально\nво время съемки\n
+        2) Сфокусируйте устройство на паспорте\n
+        3) Сделайте паспорт был равномерно освещен и на\nнем не было теней
+    </string>
 </resources>
