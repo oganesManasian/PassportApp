@@ -158,14 +158,6 @@ public class AppCamera {
                     scrH - bh, scrCenterX + bwHalf, scrH);
         }
         drawButton(canvas, m_rectBtnScan, m_strTakePhoto, 0x92DCFE, 0x1e80B0, 255);
-
-        // TODO set Frame layout or camera preview
-        //FrameLayout preview = new FrameLayout(m_ctx);
-        //preview.setForegroundGravity(77);
-        //FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        //preview.addView(mPreview);
-
-        // TODO draw instruction
     }
 
     private void drawButton(Canvas canvas, RectF rectIn, String str, int color1, int color2, int alpha)
@@ -211,9 +203,8 @@ public class AppCamera {
     }
 
     public String getOCRFilePath() {
-        boolean testMode = true; // TODO make opportunity to turn testMode on from app
-        if (testMode) {
-            String fileName = "1.jpg";
+        if (m_ctx.isTestModeTurnOn()) {
+            String fileName = "IDNpassport.jpg";
             String DATA_PATH = m_ctx.getApplicationContext().getFilesDir().toString() + "/TesseractSample/";
             return DATA_PATH + "/" + fileName;
         }

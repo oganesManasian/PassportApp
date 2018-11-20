@@ -35,7 +35,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     // DATA
     // *************************************************
     int m_viewCur = -1;
-    int m_modeCur = -1;
+
+    private boolean m_testMode = false; // TODO make opportunity to turn testMode on from app
 
     private AppIntro m_appIntro;
     private AppCamera m_appCamera;
@@ -254,5 +255,9 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             // Simple feedback about an operation in a small popup
             Toast.makeText(this, "ERROR: Image was not obtained.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public boolean isTestModeTurnOn() {
+        return m_testMode;
     }
 }
