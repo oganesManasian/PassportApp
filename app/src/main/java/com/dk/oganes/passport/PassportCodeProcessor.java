@@ -47,10 +47,12 @@ public class PassportCodeProcessor {
     public PersonalData parseCode(String text) {
         String code = findCode(text);
         if (code == null) {
+            Log.d(TAG, "code is null");
             return new PersonalData();
         }
-        Log.d(TAG, code);
         //logCodePerChar(code);
+        Log.d(TAG, code);
+
         // TODO validate
         //boolean isRight = validate(code);
         PersonalData personalData = extractPersonalData(code);
@@ -64,13 +66,13 @@ public class PassportCodeProcessor {
             i++;
         }
     }
-    private String getPersonalDataFieldFromCode(String code, String fieldName) {
-        return code.substring(fieldStartPositions.get(fieldName),
-                fieldEndPositions.get(fieldName));
+    private String getPersonalDataFieldFromCode(String code, String field) {
+        return code.substring(fieldStartPositions.get(field),
+                fieldEndPositions.get(field));
     }
 
-    private String processFieldValue(String fieldName, String fieldValue) {
-      switch (fieldName) {
+    private String processFieldValue(String field, String fieldValue) {
+      switch (field) {
           case "passport":
               if (fieldValue.equals("P")) {
                   return "Passport";
@@ -78,11 +80,10 @@ public class PassportCodeProcessor {
                   return "Unknown document" + fieldValue;
               }
           case "passportType":
-              if (fieldValue.equals("<")) {
+              if(isFieldEmpty(fieldValue))
                   return "";
-              } else {
-                  return "Unknown type: " + fieldValue;
-              }
+              else
+                  return fieldValue;
           case "issuingCountry":
               String fullCountryName1 = getFullCountryName(fieldValue);
               if (fullCountryName1.equals("Unknown country")) {
@@ -92,12 +93,6 @@ public class PassportCodeProcessor {
               }
           case "name":
               fieldValue = fieldValue.replace("<", " ");
-              //for (int i = 0; i < fieldValue.length(); ++i) {
-              //    if(fieldValue.charAt(i) == '<') {
-              //        while
-              //    }
-              //}
-              // TODO delete "<"
               return fieldValue;
           case "passportNumber":
                 return fieldValue;
@@ -109,18 +104,22 @@ public class PassportCodeProcessor {
                   return fullCountryName2;
               }
           case "dateOfBirth":
-              return fieldValue; // TODO invert order and insert dots
+              return parseDate(fieldValue);
           case "sex":
-              if (fieldValue.equals("M")) {
+              if (fieldValue.equals("M") || fieldValue.equals("H")) {
                   return "Male";
-              } else {
+              } else if(fieldValue.equals("W") || fieldValue.equals("w")){
                   return "Female";
+              } else {
+                  return "Unknown sex identificator: " + fieldValue;
               }
           case "passportExpirationDate":
-              return fieldValue;  // TODO invert order and insert dots
+              return parseDate(fieldValue);
           case "personalNumber":
-              fieldValue = fieldValue.replace("<", " ");
-              return fieldValue; // TODO delete "<"
+              if(isFieldEmpty(fieldValue))
+                  return "";
+              else
+                  return fieldValue;
           default:
               return "ERROR not handled field name";
       }
@@ -129,10 +128,10 @@ public class PassportCodeProcessor {
     private PersonalData extractPersonalData(String code) {
         // Extract personal data from code
         PersonalData personalData = new PersonalData();
-        for (String fieldName : PersonalData.fieldNames) {
-            String fieldValue = getPersonalDataFieldFromCode(code, fieldName);
-            fieldValue = processFieldValue(fieldName, fieldValue);
-            personalData.fillField(fieldName, fieldValue);
+        for (String field : PersonalData.fields) {
+            String fieldValue = getPersonalDataFieldFromCode(code, field);
+            fieldValue = processFieldValue(field, fieldValue);
+            personalData.fillField(field, fieldValue);
         }
         return personalData;
     }
@@ -148,8 +147,8 @@ public class PassportCodeProcessor {
         //    char ch = text.charAt(startIndex + 1);
         //}
         int endIndex = startIndex + codeLen + 1; // + 1 for \n
-        Log.d(TAG, "start index :" + startIndex + "; end index: " + endIndex);
-        if (endIndex < text.length() && startIndex > -1) { // TODO maybe <= text.length()
+        Log.d(TAG, "start index: " + startIndex + "; end index: " + endIndex + "; length: " + text.length());
+        if (endIndex <= text.length() && startIndex > -1) {
             return text.substring(startIndex, endIndex);
         }
         else {
@@ -187,8 +186,29 @@ public class PassportCodeProcessor {
                 return "Russian Federation";
             case "ARM":
                 return "Armenia";
+            case "UKR":
+                return "Ukraine";
+            case "IDN":
+                return "Indonesia";
+            case "GBR":
+                return "Great Britain";
             default:
                 return "Unknown country";
         }
+    }
+
+    private String parseDate(String date) {
+        date = date.substring(4,6) + "." +
+                date.substring(2, 4) + "." +
+                date.substring(0, 2);
+        return date;
+    }
+
+    private boolean isFieldEmpty(String fieldValue) {
+        for (int i = 0; i < fieldValue.length(); ++i) {
+            if (fieldValue.charAt(i) != '<')
+                return false;
+        }
+        return true;
     }
 }
