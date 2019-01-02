@@ -108,7 +108,7 @@ public class PassportCodeProcessor {
           case "sex":
               if (fieldValue.equals("M") || fieldValue.equals("H")) {
                   return "Male";
-              } else if(fieldValue.equals("W") || fieldValue.equals("w")){
+              } else if(fieldValue.equals("F") || fieldValue.equals("f")){
                   return "Female";
               } else {
                   return "Unknown sex identificator: " + fieldValue;
@@ -181,20 +181,8 @@ public class PassportCodeProcessor {
     }
 
     private String getFullCountryName(String countryCode) {
-        switch (countryCode) {
-            case "RUS":
-                return "Russian Federation";
-            case "ARM":
-                return "Armenia";
-            case "UKR":
-                return "Ukraine";
-            case "IDN":
-                return "Indonesia";
-            case "GBR":
-                return "Great Britain";
-            default:
-                return "Unknown country";
-        }
+        String countryName = CountryNames.countryNames.get(countryCode);
+        return (countryName == null) ? "Unknown country" : countryName;
     }
 
     private String parseDate(String date) {
