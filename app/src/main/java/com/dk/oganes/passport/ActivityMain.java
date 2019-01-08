@@ -28,7 +28,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
 
     public static final int VIEW_INTRO = 0;
     public static final int VIEW_CAMERA = 1;
-    public static final int VIEW_RESULT = 2;
+    public static final int VIEW_OCR = 2;
+    public static final int VIEW_RESULT = 3;
 
 
     // *************************************************
@@ -46,6 +47,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     private ViewIntro m_viewIntro;
     private ViewCamera m_viewCamera;
     private ViewResult m_viewResult;
+    private ViewOCR m_viewOCR;
 
     // screen dim
     private int m_screenW;
@@ -154,6 +156,12 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             Log.d(m_log, "Switch to m_viewResult");
             setContentView(m_viewResult);
         }
+
+        if (m_viewCur == VIEW_OCR) {
+            m_viewOCR = new ViewOCR(this);
+            Log.d(m_log, "Switch to m_viewOCR");
+            setContentView(m_viewOCR);
+        }
     }
 
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -189,8 +197,12 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             return m_viewIntro.onTouch(x, y, touchType);
         if (m_viewCur == VIEW_CAMERA)
             return m_viewCamera.onTouch(x, y, touchType);
+        if (m_viewCur == VIEW_OCR)
+            return m_viewOCR.onTouch(x, y, touchType);
         if (m_viewCur == VIEW_RESULT)
             return m_viewResult.onTouch(x, y, touchType);
+
+
         return true;
     }
 
@@ -217,17 +229,21 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             m_viewCamera.start();
         if (m_viewCur == VIEW_RESULT)
             m_viewResult.start();
+        if (m_viewCur == VIEW_OCR)
+            m_viewOCR.start();
         Log.d(m_log, "App onResume");
     }
 
     protected void onPause() {
-        // stop anims
+        // stop animation
         if (m_viewCur == VIEW_INTRO)
             m_viewIntro.stop();
         if (m_viewCur == VIEW_CAMERA)
             m_viewCamera.stop();
         if (m_viewCur == VIEW_RESULT)
             m_viewResult.stop();
+        if (m_viewCur == VIEW_OCR)
+            m_viewOCR.stop();
         // complete system
         super.onPause();
         Log.d(m_log, "App onPause");
@@ -250,10 +266,16 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         " result: " + String.valueOf(resultCode));
         // Taking photo
         if (requestCode == Utils.REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            getAppOCR().doOCR();
+            setView(VIEW_OCR);
+            //getAppOCR().doOCR();
+            //getAppOCR().imageIsReady = true;
+            //getAppOCR().startOCR();
+            //setView(VIEW_RESULT);
+            //int e = 2+ 2/0;
         } else {
             // Simple feedback about an operation in a small popup
             Toast.makeText(this, "ERROR: Image was not obtained.", Toast.LENGTH_SHORT).show();
+            setView(VIEW_CAMERA);
         }
     }
 

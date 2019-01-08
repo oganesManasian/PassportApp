@@ -2,6 +2,7 @@ package com.dk.oganes.passport;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.util.Log;
@@ -29,6 +30,8 @@ public class AppOCR {
     private TessBaseAPI tessBaseApi;
     private PassportCodeProcessor passportCodeProcessor;
     private int usedRecognition = 0;
+
+    public boolean imageIsReady = false;
 
     public AppOCR(ActivityMain ctx) {
         m_ctx = ctx;
@@ -116,8 +119,40 @@ public class AppOCR {
         }
     }
 
+    public void startOCR() {
+        //while(!imageIsReady)
+        //{
+        //   // wait until image is taken
+        //}
+        doOCR();
+    }
+
     public void doOCR() {
         try {
+
+            // Execute in other thread
+            Thread evaluatingThread = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    //final Bitmap bitmap = loadImageFromNetwork("http://example.com/image.png");
+                    //mImageView.post(new Runnable() {
+                    //    public void run() {
+                    //        mImageView.setImageBitmap(bitmap);
+                    //    }
+                    //});
+                }
+            });
+            //evaluatingThread.start();
+
+            //evaluatingThread.join();
+            Thread.sleep(5000);
+            //Thread mainThread = Thread.currentThread();
+            //mainThread.join();
+
             // TODO log time for processing image and ocr
             long startTime;
             long elapsedTime;
@@ -133,13 +168,14 @@ public class AppOCR {
 
             elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
             Log.d(TAG, "Decoding took: " + elapsedTime + "s\n");
+
             // Image preprocessing
             startTime = SystemClock.uptimeMillis();
 
             ImageProcessor imageProcessor = new ImageProcessor();
             Bitmap grayscale = imageProcessor.grayscale(bitmap);
             saveBitmap(grayscale, "grayscale"); // For debug
-            bitmap.recycle();
+            //  bitmap.recycle();
             Bitmap binarized = imageProcessor.binarize(grayscale);
             saveBitmap(binarized, "binarized"); // For debug
             grayscale.recycle();
@@ -150,13 +186,18 @@ public class AppOCR {
             // Extracting text
             startTime = SystemClock.uptimeMillis();
 
-            String result = extractText(binarized);
+            //String result = extractText(binarized);
+            String result = extractText(bitmap);
             binarized.recycle();
 
             elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
             Log.d(TAG, "Extracting text took: " + elapsedTime + "s\n");
-
             m_ctx.getAppResult().setRecognitionResult(result);
+
+
+            //m_ctx.getAppResult().setRecognitionResult("");
+            //m_ctx.setView(ActivityMain.VIEW_RESULT);
+
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -174,7 +215,29 @@ public class AppOCR {
         return extractedText;
     }
 
+    public void drawCanvas(Canvas canvas)
+    {
+        // Fill screen white
+        canvas.drawRGB(0, 0, 255);
+        //canvas.translate(padX, padY);
+    }
+
+    public boolean onTouch(int x, int y, int touchType)
+    {
+        // https://developer.android.com/reference/android/os/AsyncTask
+        // Draw progress in first thread
+
+        // Here do OCR in second tread ASYNC TASK
+        doOCR();
+
+        m_ctx.setView(ActivityMain.VIEW_RESULT);
+
+        return false;
+    }
+
     public void endOCR() {
         tessBaseApi.end();
     }
+
+
 }

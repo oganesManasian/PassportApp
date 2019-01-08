@@ -196,7 +196,10 @@ public class AppCamera {
         if (m_rectBtnScan.contains(x,  y))
         {
             dispatchTakePictureIntent();
-            m_ctx.setView(ActivityMain.VIEW_RESULT);
+            //m_ctx.setView(ActivityMain.VIEW_OCR);
+            //m_ctx.getAppOCR().startOCR();
+            //m_ctx.getAppOCR().doOCR();
+            //m_ctx.setView(ActivityMain.VIEW_RESULT);
             return false;
         }
         return true;
