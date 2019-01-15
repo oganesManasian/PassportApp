@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
+import android.view.MotionEvent;
 
 
 import java.io.File;
@@ -22,15 +23,16 @@ import java.io.File;
 public class AppCamera {
     private static final String TAG = "APP_CAMERA";
     private static final String OCR_FILENAME = "ocrPhotoFile";
+    private static final int PUSHES_REQUIRED_FOR_TEST_MODE = 5;
     // CONST
     private ActivityMain  m_ctx;
 
-    //private Camera mCamera;
-    //private CameraPreview mPreview;
     private String m_ocrFilePath;
     private File m_imagePath;
     private RectF m_rectBtnScan;
+    private RectF m_rectBtnTestMode;
     private String m_strTakePhoto;
+    private String m_strTestMode;
     private Paint m_paintRectButton;
     private Paint m_paintTextButton;
     private String instruction;
@@ -38,24 +40,20 @@ public class AppCamera {
     private int textStartX = 50;
     private int textStartY = 100;
 
+    private int pushCounter = 0;
+    private boolean testMode = false;
+
     // METHODS
     public AppCamera(ActivityMain ctx, int language){
         m_ctx = ctx;
 
-        // Create an instance of Camera
-        //mCamera = getCameraInstance();
-
         //m_imagePath = new File(m_ctx.getFilesDir(), "images"); // Save in app private dir
         m_imagePath = m_ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // Save in public dir
 
-        // Create our Preview view and set it as the content of our activity.
-        // mPreview = new CameraPreview(m_ctx, mCamera);
-        // FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        // preview.addView(mPreview);
-
-
         // Scan button
         m_rectBtnScan = new RectF();
+        m_rectBtnTestMode = new RectF();
+
         m_paintRectButton = new Paint();
         m_paintRectButton.setStyle(Paint.Style.FILL);
         m_paintRectButton.setAntiAlias(true);
@@ -71,6 +69,7 @@ public class AppCamera {
         fontPaint.setColor(Color.BLACK);
         fontPaint.setStyle(Paint.Style.FILL);
         fontPaint.setTextSize(40.0f);
+        // TODO activate left align
         //fontPaint.setTextAlign(Paint.Align.CENTER); // Moving text to the left WHY?
         fontPaint.setAntiAlias(true);
 
@@ -78,6 +77,7 @@ public class AppCamera {
         Resources res = ctx.getResources();
         String strPackage = ctx.getPackageName();
         m_strTakePhoto = res.getString(res.getIdentifier("str_scan", "string", strPackage ));
+        m_strTestMode = res.getString(res.getIdentifier("str_testMode", "string", strPackage ));
         instruction = res.getString(res.getIdentifier("instruction", "string", strPackage));
     }
 
@@ -107,18 +107,6 @@ public class AppCamera {
         }
     }
 
-    /** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance(){
-        Camera c = null;
-        try {
-            c = Camera.open(); // attempt to get a Camera instance
-        }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
-        }
-        return c; // returns null if camera is unavailable
-    }
-
     public void drawCanvas(Canvas canvas)
     {
         // Fill screen white
@@ -145,19 +133,26 @@ public class AppCamera {
         int bw = (int)(appleRadiusBase * BUTTON_SCALE);
         int bh = (int)(bw * BUTTON_W_H_RATIO);
         int bwHalf = (bw >> 1);
-        if (scrH > scrW)
-        {
-            // vertical buttons layout
-            m_rectBtnScan.set(scrCenterX - bwHalf,
-                    scrH - bh * 2, scrCenterX + bwHalf, scrH - bh);
-        }
-        else
-        {
-            // horizontal buttons layout
-            m_rectBtnScan.set(scrCenterX - bwHalf,
-                    scrH - bh, scrCenterX + bwHalf, scrH);
+
+        if (scrH > scrW) { // vertical buttons layout
+            m_rectBtnScan.set(scrCenterX - bwHalf, scrH - bh * 2, scrCenterX + bwHalf, scrH - bh);
+            m_rectBtnTestMode.set(scrCenterX - bwHalf, scrH - bh * 4, scrCenterX + bwHalf, scrH - bh * 3);
+        } else { // horizontal buttons layout
+            if (testMode) {
+                m_rectBtnScan.set(scrCenterX - bw, scrH - bh, scrCenterX, scrH);
+                m_rectBtnTestMode.set(scrCenterX, scrH - bh, scrCenterX + bw, scrH);
+                m_rectBtnScan.offset(-bh * 0.5f, 0.0f);
+                m_rectBtnTestMode.offset(+bh * 0.5f, 0.0f);
+            } else {
+                m_rectBtnScan.set(scrCenterX - bwHalf, scrH - bh, scrCenterX + bwHalf, scrH);
+                m_rectBtnTestMode.set(-1000, -1000, -500, -500);
+            }
         }
         drawButton(canvas, m_rectBtnScan, m_strTakePhoto, 0x92DCFE, 0x1e80B0, 255);
+        if (testMode) {
+            drawButton(canvas, m_rectBtnTestMode, m_strTestMode, 0x92DCFE, 0x1e80B0, 255);
+        }
+
     }
 
     private void drawButton(Canvas canvas, RectF rectIn, String str, int color1, int color2, int alpha)
@@ -196,11 +191,22 @@ public class AppCamera {
         if (m_rectBtnScan.contains(x,  y))
         {
             dispatchTakePictureIntent();
-            //m_ctx.setView(ActivityMain.VIEW_OCR);
-            //m_ctx.getAppOCR().startOCR();
-            //m_ctx.getAppOCR().doOCR();
-            //m_ctx.setView(ActivityMain.VIEW_RESULT);
             return false;
+        }
+        if (testMode) {
+            if (m_rectBtnTestMode.contains(x, y))
+            {
+                // TODO implement test mode
+                return false;
+            }
+        }
+        if (touchType == MotionEvent.ACTION_DOWN)
+        {
+            pushCounter += 1;
+            if (pushCounter == PUSHES_REQUIRED_FOR_TEST_MODE) {
+                testMode = true;
+                m_ctx.invalidate();
+            }
         }
         return true;
     }

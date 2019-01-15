@@ -130,6 +130,19 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         return m_viewCur;
     }
 
+    public void invalidate() {
+        int viewCode = getView();
+        if (viewCode == VIEW_INTRO) {
+            m_viewIntro.invalidate();
+        } else if (viewCode == VIEW_CAMERA) {
+            m_viewCamera.invalidate();
+        } else if (viewCode == VIEW_RESULT) {
+            m_viewResult.invalidate();
+        } else if (viewCode == VIEW_OCR) {
+            m_viewOCR.invalidate();
+        }
+    }
+
     public void setView(int viewID) {
         if (m_viewCur == viewID) {
             Log.d(m_log, "setView: already set");

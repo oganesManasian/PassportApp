@@ -1,31 +1,20 @@
 package com.dk.oganes.passport;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.AsyncTask;
-import android.os.Environment;
-import android.os.SystemClock;
 import android.util.Log;
 
-import com.googlecode.tesseract.android.TessBaseAPI;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class AppOCR {
     private static final String TAG = "AppOCR";
     private ActivityMain  m_ctx;
 
-    OCR ocr;
+    private OCR ocr;
 
-    private long m_curTime, m_prevTime;
+    private long m_prevTime;
     private int m_oriChanged;
     private int m_scrW;
     private int m_scrH;
@@ -70,7 +59,7 @@ public class AppOCR {
     {
         canvas.drawRGB(255, 2550, 255);
 
-        m_curTime = System.currentTimeMillis();
+        long m_curTime = System.currentTimeMillis();
         if (m_prevTime == -1)
             m_prevTime = m_curTime;
         int deltaTimeMs = (int)(m_curTime - m_prevTime) % ANIMATION_LENGTH_MS;
@@ -83,8 +72,8 @@ public class AppOCR {
         }
 
         drawSimpleAnimation(canvas, deltaTimeMs);
-        drawPassport(canvas, deltaTimeMs);
-        drawLetters(canvas, deltaTimeMs);
+        //drawPassportAnimation(canvas, deltaTimeMs);
+        //drawLettersAnimation(canvas, deltaTimeMs);
         drawProcessDescription(canvas);
     }
 
@@ -118,11 +107,11 @@ public class AppOCR {
         canvas.drawRect(rect, blue);
     }
 
-    private void drawPassport(Canvas canvas, int deltaTimeMs) {
+    private void drawPassportAnimation(Canvas canvas, int deltaTimeMs) {
 
     }
 
-    private void drawLetters(Canvas canvas, int deltaTimeMs) {
+    private void drawLettersAnimation(Canvas canvas, int deltaTimeMs) {
 
     }
 

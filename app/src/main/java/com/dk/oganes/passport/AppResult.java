@@ -36,9 +36,7 @@ public class AppResult {
 
     public void drawCanvas(Canvas canvas)
     {
-        // Fill screen white
         canvas.drawRGB(255, 255, 255);
-        //canvas.drawRGB(0, 0, 0);
         // Move canvas
         //canvas.translate(padX, padY);
 
@@ -67,5 +65,5 @@ public class AppResult {
 
     public boolean onTouch(int x, int y, int touchType) {
         return true;
-    }	// onTouch
+    }
 }

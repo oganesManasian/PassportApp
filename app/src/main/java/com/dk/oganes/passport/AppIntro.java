@@ -743,19 +743,18 @@ public class AppIntro {
             int bw = (int) (m_appleRadiusBase * BUTTON_SCALE);
             int bh = (int) (bw * BUTTON_W_H_RATIO);
             int bwHalf = (bw >> 1);
-            if (m_scrH > m_scrW) {
-                // vertical buttons layout
+            if (m_scrH > m_scrW) { // vertical buttons layout
                 m_rectBtnStart.set(m_scrCenterX - bwHalf, m_scrH - bh * 2, m_scrCenterX + bwHalf, m_scrH - bh);
                 m_rectBtnWeb.set(m_scrCenterX - bwHalf, m_scrH - bh * 4, m_scrCenterX + bwHalf, m_scrH - bh * 3);
-            } else {
-                // horizontal buttons layout
-                m_rectBtnStart.set(m_scrCenterX - bwHalf, m_scrH - bh, m_scrCenterX + bwHalf, m_scrH);
-                m_rectBtnWeb.set(-1000, -1000, -500, -500);
+            } else { // horizontal buttons layout
                 if (hasWeb) {
                     m_rectBtnStart.set(m_scrCenterX - bw, m_scrH - bh, m_scrCenterX, m_scrH);
                     m_rectBtnWeb.set(m_scrCenterX, m_scrH - bh, m_scrCenterX + bw, m_scrH);
                     m_rectBtnStart.offset(-bh * 0.5f, 0.0f);
                     m_rectBtnWeb.offset(+bh * 0.5f, 0.0f);
+                } else {
+                    m_rectBtnStart.set(m_scrCenterX - bwHalf, m_scrH - bh, m_scrCenterX + bwHalf, m_scrH);
+                    m_rectBtnWeb.set(-1000, -1000, -500, -500);
                 }
             }
             drawButton(canvas, m_rectBtnStart, m_strStart, 0x92DCFE, 0x1e80B0, opa);
