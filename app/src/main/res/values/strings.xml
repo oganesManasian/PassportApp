@@ -10,6 +10,7 @@
     <string name="str_start">Start</string>
     <string name="str_show">Show</string>
     <string name="str_scan">Scan</string>
+    <string name="str_testMode">Test mode</string>
     <string name="instruction">
         Recommendations for scanning\n
         1) Please place your phone horizontally\nwhile taking photo\n
