@@ -267,13 +267,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         // Taking photo
         if (requestCode == Utils.REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             setView(VIEW_OCR);
-            //getAppOCR().doOCR();
-            //getAppOCR().imageIsReady = true;
-            //getAppOCR().startOCR();
-            //setView(VIEW_RESULT);
-            //int e = 2+ 2/0;
         } else {
-            // Simple feedback about an operation in a small popup
             Toast.makeText(this, "ERROR: Image was not obtained.", Toast.LENGTH_SHORT).show();
             setView(VIEW_CAMERA);
         }

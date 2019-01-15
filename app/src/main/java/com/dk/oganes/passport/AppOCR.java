@@ -3,10 +3,13 @@ package com.dk.oganes.passport;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
@@ -19,215 +22,140 @@ import java.io.OutputStream;
 public class AppOCR {
     private static final String TAG = "AppOCR";
     private ActivityMain  m_ctx;
-    //private static final String DATA_PATH = Environment.getExternalStorageDirectory().toString() + "/TesseractSample/";
-    private static final String TESSDATA_PATH = "tessdata";
-    private static final String TESSDATA_LNG = "ENG";
 
-    private String DATA_PATH;
+    OCR ocr;
 
-    private TessBaseAPI tessBaseApi;
-    private PassportCodeProcessor passportCodeProcessor;
-    private int usedRecognition = 0;
-
-    public boolean imageIsReady = false;
+    private long m_curTime, m_prevTime;
+    private int m_oriChanged;
+    private int m_scrW;
+    private int m_scrH;
+    private int dimMax;
+    private int dimMin;
+    private int m_scrCenterX;
+    private int m_scrCenterY;
+    private static final int ANIMATION_LENGTH_MS = 2000;
+    private Paint m_paintDescription;
 
     public AppOCR(ActivityMain ctx) {
         m_ctx = ctx;
-        // Init tesseract
-        try {
-            tessBaseApi = new TessBaseAPI();
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-            if (tessBaseApi == null) {
-                Log.e(TAG, "TessBaseAPI is null. TessFactory not returning tess object.");
-            }
-        }
-        // Cope tesseract files
-        DATA_PATH = m_ctx.getApplicationContext().getFilesDir().toString() + "/TesseractSample/";
 
-        prepareTesseract();
+        ocr = new OCR(ctx);
 
-        tessBaseApi.init(DATA_PATH, TESSDATA_LNG);
-        //Log.d(TAG, "Training file loaded");
-
-        // Init text handler
-        passportCodeProcessor = new PassportCodeProcessor();
-        // EXTRA SETTINGS
-        tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, PassportCodeProcessor.CHARS_TO_DETECT);
-        //tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_BLACKLIST, "!@#$%^&*()_+=-qwertyuiop[]}{POIU" +
-        //        "YTRWQasdASDfghFGHjklJKLl;L:'\"\\|~`xcvXCVbnmBNM,./<>?");
+        m_prevTime = -1;
+        m_oriChanged = 1;
+        m_paintDescription = new Paint();
+        m_paintDescription.setColor(0xFF000088);
+        m_paintDescription.setStyle(Paint.Style.FILL);
+        m_paintDescription.setTextSize(60.0f);
+        m_paintDescription.setTextAlign(Paint.Align.CENTER);
+        m_paintDescription.setAntiAlias(true);
     }
 
+    private void acceptNewScreen(Canvas canvas) {
+        m_scrW = canvas.getWidth();
+        m_scrH = canvas.getHeight();
 
-    private void copyTessDataFiles(String path) {
-        try {
-            String fileList[] = m_ctx.getApplicationContext().getAssets().list(path);
-
-            for (String fileName : fileList) {
-                String newFileName;
-                String pathToDataFile;
-
-                if (fileName.endsWith("traineddata")) {
-                    // For tesseract training data
-                    // Tesseract need name with UpperCase
-                    String[] filenameParts = fileName.split("\\.");
-                    newFileName = filenameParts[0].toUpperCase() + "." + filenameParts[1];
-
-                    pathToDataFile = DATA_PATH + path + "/" + newFileName;
-                }
-                else {
-                    // Other Files
-                    newFileName = fileName;
-                    pathToDataFile = DATA_PATH + "/" + newFileName;
-                }
-
-                // copy file from assets folder to device storage
-                if (!(new File(pathToDataFile)).exists()) {
-                    InputStream in = m_ctx.getApplicationContext().getAssets().open(path + "/" + fileName);
-                    OutputStream out = new FileOutputStream(pathToDataFile);
-                    Utils.copyFile(in, out);
-                    Log.d(TAG, "Copied " + fileName + "to tessdata");
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Unable to copy files to tessdata " + e.toString());
-        }
+        m_scrCenterX = m_scrW >> 1;
+        m_scrCenterY = m_scrH >> 1;
+        dimMin = (m_scrW < m_scrH) ? m_scrW : m_scrH;
+        dimMax = (m_scrW > m_scrH) ? m_scrW : m_scrH;
     }
 
-    private void prepareTesseract() {
-        try {
-            Utils.prepareDirectory(DATA_PATH + TESSDATA_PATH);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        copyTessDataFiles(TESSDATA_PATH);
+    public void onOrientation(int ori) {
+        Log.d(TAG, "New orientation");
+        m_oriChanged = 1;
     }
-
-    private void saveBitmap(Bitmap bitmap, String filename) {
-        String path = m_ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString();
-        OutputStream outStream = null;
-        File file = new File(path, filename + ".png");
-        try {
-            outStream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream);
-            outStream.flush();
-            outStream.close();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Bitmap decodeOcrImage() {
-        String OCRFilePath = m_ctx.getAppCamera().getOCRFilePath();
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        // TODO optumize this parameter
-        options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
-        Bitmap bitmap = BitmapFactory.decodeFile(OCRFilePath, options);
-        return bitmap;
-    }
-
-    private Bitmap PrepareImageForOCR(Bitmap bitmap) {
-        ImageProcessor imageProcessor = new ImageProcessor();
-        Bitmap grayscale = imageProcessor.grayscale(bitmap);
-        saveBitmap(grayscale, "grayscale"); // For debug
-        //  bitmap.recycle();
-        Bitmap binarized = imageProcessor.binarize(grayscale);
-        saveBitmap(binarized, "binarized"); // For debug
-        grayscale.recycle();
-        return binarized;
-    }
-
-    public void doOCR() {
-        // TODO log time for processing image and ocr
-        long startTime;
-        long elapsedTime;
-
-        //Image decoding
-        startTime = SystemClock.uptimeMillis();
-        Bitmap bitmap = decodeOcrImage();
-        elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
-        Log.d(TAG, "Decoding took: " + elapsedTime + "s\n");
-
-        // Image preprocessing
-        startTime = SystemClock.uptimeMillis();
-        Bitmap bitmapForOCR = PrepareImageForOCR(bitmap);
-        elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
-        Log.d(TAG, "Image processing took: " + elapsedTime + "s\n");
-
-        // Extracting text
-        startTime = SystemClock.uptimeMillis();
-        //String result = extractText(binarized);
-        String result = extractText(bitmap); // bitmapForOCR
-        bitmapForOCR.recycle();
-        elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
-        Log.d(TAG, "Extracting text took: " + elapsedTime + "s\n");
-
-        m_ctx.getAppResult().setRecognitionResult(result);
-        //m_ctx.getAppResult().setRecognitionResult("");
-        //m_ctx.setView(ActivityMain.VIEW_RESULT);
-    }
-
-    private String extractText(Bitmap bitmap) {
-        tessBaseApi.setImage(bitmap);
-        String extractedText = "empty result";
-        try {
-            extractedText = tessBaseApi.getUTF8Text();
-            Log.d(TAG, "Recognized:\n" + extractedText);
-        } catch (Exception e) {
-            Log.e(TAG, "Error in recognizing text.");
-        }
-        return extractedText;
-    }
-
+    
     public void drawCanvas(Canvas canvas)
     {
-        // Fill screen white
-        canvas.drawRGB(0, 0, 255);
-        //canvas.translate(padX, padY);
+        canvas.drawRGB(255, 2550, 255);
+
+        m_curTime = System.currentTimeMillis();
+        if (m_prevTime == -1)
+            m_prevTime = m_curTime;
+        int deltaTimeMs = (int)(m_curTime - m_prevTime) % ANIMATION_LENGTH_MS;
+
+        //Log.d("Animation", "deltaTime = " + String.valueOf(deltaTimeMs));
+
+        if (m_oriChanged == 1) {
+            m_oriChanged = 0;
+            acceptNewScreen(canvas);
+        }
+
+        drawSimpleAnimation(canvas, deltaTimeMs);
+        drawPassport(canvas, deltaTimeMs);
+        drawLetters(canvas, deltaTimeMs);
+        drawProcessDescription(canvas);
     }
 
-    public boolean onTouch(int x, int y, int touchType)
-    {
-        // https://developer.android.com/reference/android/os/AsyncTask
-        // Draw progress in first thread
-        try {
-            // Execute in other thread
-            Thread evaluatingThread = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    //final Bitmap bitmap = loadImageFromNetwork("http://example.com/image.png");
-                    //mImageView.post(new Runnable() {
-                    //    public void run() {
-                    //        mImageView.setImageBitmap(bitmap);
-                    //    }
-                    //});
-                }
-            });
-            //evaluatingThread.start();
+    private void drawProcessDescription(Canvas canvas) {
+        int paddingY = m_scrH / 8;
+        String description = "Extracting passport data";
+        canvas.drawText(description, m_scrCenterX, paddingY, m_paintDescription);
+    }
 
-            //evaluatingThread.join();
-            Thread.sleep(5000);
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+    private void drawSimpleAnimation(Canvas canvas, int deltaTimeMs) {
+        int posesNum = 4;
+        int indent = (int)(dimMin * 0.125);
+        int[] posesX = {m_scrCenterX - indent,m_scrCenterX + indent,
+                m_scrCenterX + indent, m_scrCenterX - indent};
+        int[] posesY = {m_scrCenterY + indent, m_scrCenterY + indent,
+                m_scrCenterY - indent, m_scrCenterY - indent};
+
+        long eachPoseTimePeriod = ANIMATION_LENGTH_MS / posesNum;
+        int curPoseInd = (int)(deltaTimeMs / eachPoseTimePeriod);
+        int rectWidth = (int)(dimMin * 0.125);
+
+        Paint blue = new Paint();
+        blue.setColor(Color.BLUE);
+        blue.setStyle(Paint.Style.FILL);
+
+        RectF rect = new RectF(posesX[curPoseInd] - rectWidth/2,
+                posesY[curPoseInd] - rectWidth/2,
+                posesX[curPoseInd] + rectWidth/2,
+                posesY[curPoseInd] + rectWidth/2);
+
+        canvas.drawRect(rect, blue);
+    }
+
+    private void drawPassport(Canvas canvas, int deltaTimeMs) {
+
+    }
+
+    private void drawLetters(Canvas canvas, int deltaTimeMs) {
+
+    }
+
+    class OCRComputations extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
         }
-        //Thread mainThread = Thread.currentThread();
-        //mainThread.join();
 
-        // Here do OCR in second tread ASYNC TASK
-        doOCR();
+        @Override
+        protected Void doInBackground(Void... params) {
+            ocr.doOCR();
+            return null;
+        }
 
-        m_ctx.setView(ActivityMain.VIEW_RESULT);
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            m_ctx.setView(ActivityMain.VIEW_RESULT);
+        }
+    }
 
+    public void makeOCRComputations() {
+        OCRComputations computations = new OCRComputations();
+        computations.execute();
+    }
+
+    public boolean onTouch(int x, int y, int touchType) {
         return false;
     }
 
     public void endOCR() {
-        tessBaseApi.end();
+        ocr.closeTesseract();
     }
-
-
 }
