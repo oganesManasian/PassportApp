@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-
-
 public class AppOCR {
     private static final String TAG = "AppOCR";
     private ActivityMain  m_ctx;
@@ -119,88 +117,54 @@ public class AppOCR {
         }
     }
 
-    public void startOCR() {
-        //while(!imageIsReady)
-        //{
-        //   // wait until image is taken
-        //}
-        doOCR();
+    private Bitmap decodeOcrImage() {
+        String OCRFilePath = m_ctx.getAppCamera().getOCRFilePath();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        // TODO optumize this parameter
+        options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
+        Bitmap bitmap = BitmapFactory.decodeFile(OCRFilePath, options);
+        return bitmap;
+    }
+
+    private Bitmap PrepareImageForOCR(Bitmap bitmap) {
+        ImageProcessor imageProcessor = new ImageProcessor();
+        Bitmap grayscale = imageProcessor.grayscale(bitmap);
+        saveBitmap(grayscale, "grayscale"); // For debug
+        //  bitmap.recycle();
+        Bitmap binarized = imageProcessor.binarize(grayscale);
+        saveBitmap(binarized, "binarized"); // For debug
+        grayscale.recycle();
+        return binarized;
     }
 
     public void doOCR() {
-        try {
+        // TODO log time for processing image and ocr
+        long startTime;
+        long elapsedTime;
 
-            // Execute in other thread
-            Thread evaluatingThread = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    //final Bitmap bitmap = loadImageFromNetwork("http://example.com/image.png");
-                    //mImageView.post(new Runnable() {
-                    //    public void run() {
-                    //        mImageView.setImageBitmap(bitmap);
-                    //    }
-                    //});
-                }
-            });
-            //evaluatingThread.start();
+        //Image decoding
+        startTime = SystemClock.uptimeMillis();
+        Bitmap bitmap = decodeOcrImage();
+        elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
+        Log.d(TAG, "Decoding took: " + elapsedTime + "s\n");
 
-            //evaluatingThread.join();
-            Thread.sleep(5000);
-            //Thread mainThread = Thread.currentThread();
-            //mainThread.join();
+        // Image preprocessing
+        startTime = SystemClock.uptimeMillis();
+        Bitmap bitmapForOCR = PrepareImageForOCR(bitmap);
+        elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
+        Log.d(TAG, "Image processing took: " + elapsedTime + "s\n");
 
-            // TODO log time for processing image and ocr
-            long startTime;
-            long elapsedTime;
+        // Extracting text
+        startTime = SystemClock.uptimeMillis();
+        //String result = extractText(binarized);
+        String result = extractText(bitmap); // bitmapForOCR
+        bitmapForOCR.recycle();
+        elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
+        Log.d(TAG, "Extracting text took: " + elapsedTime + "s\n");
 
-            //Image decoding
-            startTime = SystemClock.uptimeMillis();
-
-            String OCRFilePath = m_ctx.getAppCamera().getOCRFilePath();
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            // TODO optumize this parameter
-            options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
-            Bitmap bitmap = BitmapFactory.decodeFile(OCRFilePath, options);
-
-            elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
-            Log.d(TAG, "Decoding took: " + elapsedTime + "s\n");
-
-            // Image preprocessing
-            startTime = SystemClock.uptimeMillis();
-
-            ImageProcessor imageProcessor = new ImageProcessor();
-            Bitmap grayscale = imageProcessor.grayscale(bitmap);
-            saveBitmap(grayscale, "grayscale"); // For debug
-            //  bitmap.recycle();
-            Bitmap binarized = imageProcessor.binarize(grayscale);
-            saveBitmap(binarized, "binarized"); // For debug
-            grayscale.recycle();
-
-            elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
-            Log.d(TAG, "Image processing took: " + elapsedTime + "s\n");
-
-            // Extracting text
-            startTime = SystemClock.uptimeMillis();
-
-            //String result = extractText(binarized);
-            String result = extractText(bitmap);
-            binarized.recycle();
-
-            elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
-            Log.d(TAG, "Extracting text took: " + elapsedTime + "s\n");
-            m_ctx.getAppResult().setRecognitionResult(result);
-
-
-            //m_ctx.getAppResult().setRecognitionResult("");
-            //m_ctx.setView(ActivityMain.VIEW_RESULT);
-
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
+        m_ctx.getAppResult().setRecognitionResult(result);
+        //m_ctx.getAppResult().setRecognitionResult("");
+        //m_ctx.setView(ActivityMain.VIEW_RESULT);
     }
 
     private String extractText(Bitmap bitmap) {
@@ -226,6 +190,32 @@ public class AppOCR {
     {
         // https://developer.android.com/reference/android/os/AsyncTask
         // Draw progress in first thread
+        try {
+            // Execute in other thread
+            Thread evaluatingThread = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    //final Bitmap bitmap = loadImageFromNetwork("http://example.com/image.png");
+                    //mImageView.post(new Runnable() {
+                    //    public void run() {
+                    //        mImageView.setImageBitmap(bitmap);
+                    //    }
+                    //});
+                }
+            });
+            //evaluatingThread.start();
+
+            //evaluatingThread.join();
+            Thread.sleep(5000);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+        //Thread mainThread = Thread.currentThread();
+        //mainThread.join();
 
         // Here do OCR in second tread ASYNC TASK
         doOCR();
