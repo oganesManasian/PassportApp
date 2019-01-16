@@ -95,7 +95,7 @@ public class PassportCodeProcessor {
               fieldValue = fieldValue.replace("<", " ");
               return fieldValue;
           case "passportNumber":
-                return fieldValue;
+                return deleteUnnesesarySymbols(fieldValue);
           case "nationality":
               String fullCountryName2 = getFullCountryName(fieldValue);
               if (fullCountryName2.equals("Unknown country")) {
@@ -119,7 +119,7 @@ public class PassportCodeProcessor {
               if(isFieldEmpty(fieldValue))
                   return "";
               else
-                  return fieldValue;
+                  return deleteUnnesesarySymbols(fieldValue);
           default:
               return "ERROR not handled field name";
       }
@@ -198,5 +198,9 @@ public class PassportCodeProcessor {
                 return false;
         }
         return true;
+    }
+
+    private String deleteUnnesesarySymbols(String fieldValue) {
+        return fieldValue.replace('<', ' ');
     }
 }

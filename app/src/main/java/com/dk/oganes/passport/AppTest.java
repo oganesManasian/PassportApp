@@ -225,9 +225,9 @@ public class AppTest {
 
     private void launchOCROnTestFile(String testFilename) {
         Log.i(TAG, "Launching OCR on testfile: " + testFilename);
-        m_ctx.setView(ActivityMain.VIEW_OCR);
         String ocrTestFilePath = TEST_DATA_PATH_DEVICE + "/" + testFilename;
         m_ctx.getAppOCR().setOcrFilePath(ocrTestFilePath);
+        m_ctx.setView(ActivityMain.VIEW_OCR);
     }
 
     public boolean onTouch(int x, int y, int touchType) {
