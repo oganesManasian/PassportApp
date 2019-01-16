@@ -244,6 +244,11 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
                 setView(VIEW_CAMERA);
                 return true;
             }
+
+            if (m_viewCur == VIEW_OCR) {
+                setView(VIEW_CAMERA);
+                return true;
+            }
             //Log.d("DCT", "Back key pressed");
         }
         return super.onKeyDown(keyCode, evt);

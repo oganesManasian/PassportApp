@@ -81,7 +81,7 @@ public class AppOCR {
 
     private void drawProcessDescription(Canvas canvas) {
         int paddingY = m_scrH / 8;
-        String description = "Extracting passport data";
+        String description = "Extracting passport data"; // TODO move to resourses
         canvas.drawText(description, m_scrCenterX, paddingY, m_paintDescription);
     }
 
