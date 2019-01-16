@@ -67,7 +67,7 @@ public class OCR {
                     pathToDataFile = DATA_PATH + path + "/" + newFileName;
                 }
                 else {
-                    // Other Files
+                    // Other Files // TODO delete
                     newFileName = fileName;
                     pathToDataFile = DATA_PATH + "/" + newFileName;
                 }
@@ -88,6 +88,7 @@ public class OCR {
     private void prepareTesseract() {
         try {
             Utils.prepareDirectory(DATA_PATH + TESSDATA_PATH);
+            //Utils.prepareDirectory(DATA_PATH); // TODO try
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -108,11 +109,12 @@ public class OCR {
         }
     }
 
-    private Bitmap decodeOCRImage() {
-        String OCRFilePath = m_ctx.getAppCamera().getOCRFilePath();
+    private Bitmap decodeOCRImage(String OCRFilePath) {
+        //String OCRFilePath1 = m_ctx.getAppCamera().getOCRFilePath(); // TODO delete
         BitmapFactory.Options options = new BitmapFactory.Options();
         // TODO optumize this parameter
         options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
+        //return BitmapFactory.decodeFile(OCRFilePath1, options); // TODO delete
         return BitmapFactory.decodeFile(OCRFilePath, options);
     }
 
@@ -126,13 +128,13 @@ public class OCR {
         return binarized;
     }
 
-    public void doOCR() {
+    public void doOCR(String OCRFilePath) {
         long startTime;
         long elapsedTime;
 
         //Image decoding
         startTime = SystemClock.uptimeMillis();
-        Bitmap bitmap = decodeOCRImage();
+        Bitmap bitmap = decodeOCRImage(OCRFilePath);
         elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
         Log.d(TAG, "Decoding took: " + elapsedTime + "s\n");
 

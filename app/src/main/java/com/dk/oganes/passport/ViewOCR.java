@@ -4,6 +4,7 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 
 public class ViewOCR extends View {
@@ -42,6 +43,7 @@ public class ViewOCR extends View {
         m_active = false;
         setOnTouchListener(app);
     }
+
     public boolean onTouch(int x, int y, int evtType)
     {
         AppOCR app = m_app.getAppOCR();
@@ -72,6 +74,10 @@ public class ViewOCR extends View {
     public void start() {
         m_active = true;
         m_handler.sleep(UPDATE_TIME_MS);
+    }
+
+    public void startComputaions() {
+        start();
         AppOCR app = m_app.getAppOCR();
         app.makeOCRComputations();
     }

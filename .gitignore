@@ -18,8 +18,11 @@ bin/
 gen/
 out/
 
+# OpenCv lib
+openCVLibrary343/
+
 # Test images
-# *.jpg
+*.jpg
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -44,5 +47,3 @@ captures/
 google-services.json
 
 .DS_Store
-
-misc.xml

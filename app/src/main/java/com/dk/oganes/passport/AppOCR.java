@@ -6,13 +6,15 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.MotionEvent;
 
 
 public class AppOCR {
     private static final String TAG = "AppOCR";
     private ActivityMain  m_ctx;
 
-    private OCR ocr;
+    private OCR m_ocr;
+    private String m_OCRFilePath; // File for OCR
 
     private long m_prevTime;
     private int m_oriChanged;
@@ -28,7 +30,7 @@ public class AppOCR {
     public AppOCR(ActivityMain ctx) {
         m_ctx = ctx;
 
-        ocr = new OCR(ctx);
+        m_ocr = new OCR(ctx);
 
         m_prevTime = -1;
         m_oriChanged = 1;
@@ -124,7 +126,7 @@ public class AppOCR {
 
         @Override
         protected Void doInBackground(Void... params) {
-            ocr.doOCR();
+            m_ocr.doOCR(m_OCRFilePath);
             return null;
         }
 
@@ -135,16 +137,29 @@ public class AppOCR {
         }
     }
 
+    public void setOcrFilePath(String OCRFilePath) {
+        m_OCRFilePath = OCRFilePath;
+    }
+
     public void makeOCRComputations() {
+        if (m_OCRFilePath == null)
+        {
+            Log.e(TAG, "OCR file is not assigned");
+            return;
+        }
+        Log.i(TAG, "Launching computations");
         OCRComputations computations = new OCRComputations();
         computations.execute();
     }
 
     public boolean onTouch(int x, int y, int touchType) {
+        if (touchType == MotionEvent.ACTION_DOWN) {
+
+        }
         return false;
     }
 
     public void endOCR() {
-        ocr.closeTesseract();
+        m_ocr.closeTesseract();
     }
 }

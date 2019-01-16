@@ -30,6 +30,7 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     public static final int VIEW_CAMERA = 1;
     public static final int VIEW_OCR = 2;
     public static final int VIEW_RESULT = 3;
+    public static final int VIEW_TEST = 4;
 
 
     // *************************************************
@@ -37,17 +38,17 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     // *************************************************
     int m_viewCur = -1;
 
-    private boolean m_testMode = false; // TODO make opportunity to turn testMode on from app
-
     private AppIntro m_appIntro;
     private AppCamera m_appCamera;
     private AppResult m_appResult;
     private AppOCR m_appOCR;
+    private AppTest m_appTest;
 
     private ViewIntro m_viewIntro;
     private ViewCamera m_viewCamera;
     private ViewResult m_viewResult;
     private ViewOCR m_viewOCR;
+    private ViewTest m_viewTest;
 
     // screen dim
     private int m_screenW;
@@ -98,6 +99,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         m_appResult = new AppResult(this, language);
         // Create OCR application
         m_appOCR = new AppOCR(this);
+        // Create Test application
+        m_appTest = new AppTest(this, language);
         // Create view
         setView(VIEW_INTRO);
     }
@@ -116,6 +119,10 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
 
     public AppOCR getAppOCR() {
         return m_appOCR;
+    }
+
+    public AppTest getAppTest() {
+        return m_appTest;
     }
 
     public int getScreenWidth() {
@@ -140,6 +147,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             m_viewResult.invalidate();
         } else if (viewCode == VIEW_OCR) {
             m_viewOCR.invalidate();
+        } else if (viewCode == VIEW_TEST) {
+            m_viewTest.invalidate();
         }
     }
 
@@ -150,30 +159,32 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
         }
 
         m_viewCur = viewID;
+
         if (m_viewCur == VIEW_INTRO) {
             m_viewIntro = new ViewIntro(this);
             Log.d(m_log, "Switch to m_viewIntro");
             setContentView(m_viewIntro);
         }
-
         if (m_viewCur == VIEW_CAMERA) {
             m_viewCamera = new ViewCamera(this);
             Log.d(m_log, "Switch to m_viewCamera");
             setContentView(m_viewCamera);
-            //setContentView(R.layout.camera_preview);
-            m_viewCamera.start();
         }
-
         if (m_viewCur == VIEW_RESULT) {
             m_viewResult = new ViewResult(this);
             Log.d(m_log, "Switch to m_viewResult");
             setContentView(m_viewResult);
         }
-
         if (m_viewCur == VIEW_OCR) {
             m_viewOCR = new ViewOCR(this);
             Log.d(m_log, "Switch to m_viewOCR");
             setContentView(m_viewOCR);
+            m_viewOCR.startComputaions();
+        }
+        if (m_viewCur == VIEW_TEST) {
+            m_viewTest = new ViewTest(this);
+            Log.d(m_log, "Switch to m_viewTest");
+            setContentView(m_viewTest);
         }
     }
 
@@ -214,8 +225,8 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             return m_viewOCR.onTouch(x, y, touchType);
         if (m_viewCur == VIEW_RESULT)
             return m_viewResult.onTouch(x, y, touchType);
-
-
+        if (m_viewCur == VIEW_TEST)
+            return m_viewTest.onTouch(x, y, touchType);
         return true;
     }
 
@@ -226,6 +237,10 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
                 return true;
             }
             if (m_viewCur == VIEW_RESULT) {
+                setView(VIEW_CAMERA);
+                return true;
+            }
+            if (m_viewCur == VIEW_TEST) {
                 setView(VIEW_CAMERA);
                 return true;
             }
@@ -240,10 +255,12 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             m_viewIntro.start();
         if (m_viewCur == VIEW_CAMERA)
             m_viewCamera.start();
-        if (m_viewCur == VIEW_RESULT)
-            m_viewResult.start();
         if (m_viewCur == VIEW_OCR)
             m_viewOCR.start();
+        if (m_viewCur == VIEW_RESULT)
+            m_viewResult.start();
+        if (m_viewCur == VIEW_TEST)
+            m_viewTest.start();
         Log.d(m_log, "App onResume");
     }
 
@@ -253,10 +270,12 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             m_viewIntro.stop();
         if (m_viewCur == VIEW_CAMERA)
             m_viewCamera.stop();
-        if (m_viewCur == VIEW_RESULT)
-            m_viewResult.stop();
         if (m_viewCur == VIEW_OCR)
             m_viewOCR.stop();
+        if (m_viewCur == VIEW_RESULT)
+            m_viewResult.stop();
+        if (m_viewCur == VIEW_TEST)
+            m_viewTest.stop();
         // complete system
         super.onPause();
         Log.d(m_log, "App onPause");
@@ -284,9 +303,5 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
             Toast.makeText(this, "ERROR: Image was not obtained.", Toast.LENGTH_SHORT).show();
             setView(VIEW_CAMERA);
         }
-    }
-
-    public boolean isTestModeTurnOn() {
-        return m_testMode;
     }
 }

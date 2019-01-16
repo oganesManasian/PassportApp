@@ -17,9 +17,9 @@ public class ViewIntro extends View
   {
     ViewIntro m_viewIntro;
 
-    public RedrawHandler(ViewIntro v)
+    public RedrawHandler(ViewIntro view)
     {
-      m_viewIntro = v;
+      m_viewIntro = view;
     }
 
     public void handleMessage(Message msg)
@@ -37,7 +37,6 @@ public class ViewIntro extends View
 
   // CONST
   private static final int UPDATE_TIME_MS = 30;
-
 
   // DATA
   ActivityMain	m_app;

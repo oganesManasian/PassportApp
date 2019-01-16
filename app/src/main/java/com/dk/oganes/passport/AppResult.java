@@ -29,7 +29,6 @@ public class AppResult {
     }
 
     public void setRecognitionResult(String str) {
-        //recognitionResult = str;
         PassportCodeProcessor passportCodeProcessor = new PassportCodeProcessor();
         personalData = passportCodeProcessor.parseCode(str);
     }

@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.MotionEvent;
 
 
@@ -188,36 +189,27 @@ public class AppCamera {
 
     public boolean onTouch(int x, int y, int touchType)
     {
-        if (m_rectBtnScan.contains(x,  y))
-        {
-            dispatchTakePictureIntent();
-            return false;
-        }
-        if (testMode) {
-            if (m_rectBtnTestMode.contains(x, y))
-            {
-                // TODO implement test mode
-                return false;
-            }
-        }
         if (touchType == MotionEvent.ACTION_DOWN)
         {
-            pushCounter += 1;
-            if (pushCounter == PUSHES_REQUIRED_FOR_TEST_MODE) {
-                testMode = true;
-                m_ctx.invalidate();
+            if (m_rectBtnScan.contains(x,  y))
+            {
+                Log.d(TAG, "Touch performed => starting camera");
+                dispatchTakePictureIntent();
+                m_ctx.getAppOCR().setOcrFilePath(m_ocrFilePath);
+            } else if (testMode) {
+                if (m_rectBtnTestMode.contains(x, y))
+                {
+                    m_ctx.setView(ActivityMain.VIEW_TEST);
+                }
+            } else {
+                pushCounter += 1;
+                if (pushCounter == PUSHES_REQUIRED_FOR_TEST_MODE) {
+                    testMode = true;
+                    Log.i(TAG, "Unblocked test mode");
+                    m_ctx.invalidate();
+                }
             }
         }
         return true;
-    }
-
-    public String getOCRFilePath() {
-        if (m_ctx.isTestModeTurnOn()) {
-            String fileName = "IDNpassport.jpg";
-            String DATA_PATH = m_ctx.getApplicationContext().getFilesDir().toString() + "/TesseractSample/";
-            return DATA_PATH + "/" + fileName;
-        }
-        else
-            return m_ocrFilePath;
     }
 }
