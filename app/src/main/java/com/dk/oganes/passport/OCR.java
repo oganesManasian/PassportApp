@@ -23,6 +23,7 @@ public class OCR {
     // For tesseract
     private static final String TESSDATA_PATH = "tessdata";
     private static final String TESSDATA_LNG = "ENG";
+    private static final int MIN_IMAGE_WIDTH = 1000;
     private String DATA_PATH;
     private TessBaseAPI tessBaseApi;
 
@@ -110,12 +111,24 @@ public class OCR {
     }
 
     private Bitmap decodeOCRImage(String OCRFilePath) {
-        //String OCRFilePath1 = m_ctx.getAppCamera().getOCRFilePath(); // TODO delete
         BitmapFactory.Options options = new BitmapFactory.Options();
-        // TODO optumize this parameter
-        options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
-        //return BitmapFactory.decodeFile(OCRFilePath1, options); // TODO delete
-        return BitmapFactory.decodeFile(OCRFilePath, options);
+        int ratio = 4;
+        int width;
+        Bitmap bitmap;
+        while(true) {
+            options.inSampleSize = ratio; // 1 - means max size
+            bitmap = BitmapFactory.decodeFile(OCRFilePath, options);
+            width = bitmap.getWidth();
+            Log.d(TAG, "Width = " + width + " ratio = " + ratio);
+            ratio--;
+
+            if(width >= MIN_IMAGE_WIDTH || ratio == 0) {
+                break;
+            } else {
+                bitmap.recycle();
+            }
+        }
+        return bitmap;
     }
 
     private Bitmap PrepareImageForOCR(Bitmap bitmap) {
