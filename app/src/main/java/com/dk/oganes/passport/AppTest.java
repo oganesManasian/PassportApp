@@ -1,5 +1,6 @@
 package com.dk.oganes.passport;
 
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
@@ -31,6 +32,8 @@ public class AppTest {
     private List<String> testFileNames = new ArrayList<>();
     private List<RectF> testFileButtonsRect = new ArrayList<>();
 
+    private String m_instruction;
+
     public AppTest(ActivityMain ctx, int language)
     {
         m_ctx = ctx;
@@ -55,6 +58,10 @@ public class AppTest {
 
         TEST_DATA_PATH_DEVICE = m_ctx.getApplicationContext().getFilesDir().toString() + "/"
                 + TEST_DATA_DIRNAME;
+
+        Resources res = ctx.getResources();
+        String strPackage = ctx.getPackageName();
+        m_instruction = res.getString(res.getIdentifier("ChooseTestFile", "string", strPackage));
 
         loadTestFiles();
         genButtonsForTestFiles();
@@ -206,8 +213,7 @@ public class AppTest {
         int scrH = canvas.getHeight();
         int paddingY = 100; // scrH / 8;
         int scrCenterX = scrW >> 1;
-        String description = "Please choose test file"; // TODO move to resourses
-        canvas.drawText(description, scrCenterX, paddingY, m_paintDescription);
+        canvas.drawText(m_instruction, scrCenterX, paddingY, m_paintDescription);
     }
 
     public void drawCanvas(Canvas canvas)

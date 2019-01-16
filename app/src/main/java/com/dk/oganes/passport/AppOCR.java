@@ -1,5 +1,6 @@
 package com.dk.oganes.passport;
 
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -8,6 +9,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+
 
 public class AppOCR {
     private static final String TAG = "AppOCR";
@@ -15,6 +19,8 @@ public class AppOCR {
 
     private OCR m_ocr;
     private String m_OCRFilePath; // File for OCR
+
+    private String m_processDescription;
 
     private long m_prevTime;
     private int m_oriChanged;
@@ -40,6 +46,10 @@ public class AppOCR {
         m_paintDescription.setTextSize(60.0f);
         m_paintDescription.setTextAlign(Paint.Align.CENTER);
         m_paintDescription.setAntiAlias(true);
+
+        Resources res = ctx.getResources();
+        String strPackage = ctx.getPackageName();
+        m_processDescription = res.getString(res.getIdentifier("OCRExecutingProcessDescription", "string", strPackage));
     }
 
     private void acceptNewScreen(Canvas canvas) {
@@ -73,7 +83,7 @@ public class AppOCR {
             acceptNewScreen(canvas);
         }
 
-        drawSimpleAnimation(canvas, deltaTimeMs);
+        drawSimpleAnimationRect(canvas, deltaTimeMs);
         //drawPassportAnimation(canvas, deltaTimeMs);
         //drawLettersAnimation(canvas, deltaTimeMs);
         drawProcessDescription(canvas);
@@ -81,14 +91,24 @@ public class AppOCR {
 
     private void drawProcessDescription(Canvas canvas) {
         int paddingY = m_scrH / 8;
-        String description = "Extracting passport data"; // TODO move to resourses
-        canvas.drawText(description, m_scrCenterX, paddingY, m_paintDescription);
+        canvas.drawText(m_processDescription, m_scrCenterX, paddingY, m_paintDescription);
     }
 
-    private void drawSimpleAnimation(Canvas canvas, int deltaTimeMs) {
+    private void drawSimpleAnimationCircle(Canvas canvas, int deltaTimeMs) {
+        Paint blue = new Paint();
+        blue.setColor(Color.BLUE);
+        blue.setStyle(Paint.Style.FILL);
+
+        int indent = (int)(dimMin * 0.125);
+        float radius = dimMin * 0.05f;
+        int x = (int)(sin(deltaTimeMs / 80) * indent) + m_scrCenterX;
+        int y = (int)(cos(deltaTimeMs / 80) * indent) + m_scrCenterY;
+        canvas.drawCircle(x, y, radius, blue);
+    }
+    private void drawSimpleAnimationRect(Canvas canvas, int deltaTimeMs) {
         int posesNum = 4;
         int indent = (int)(dimMin * 0.125);
-        int[] posesX = {m_scrCenterX - indent,m_scrCenterX + indent,
+        int[] posesX = {m_scrCenterX - indent, m_scrCenterX + indent,
                 m_scrCenterX + indent, m_scrCenterX - indent};
         int[] posesY = {m_scrCenterY + indent, m_scrCenterY + indent,
                 m_scrCenterY - indent, m_scrCenterY - indent};

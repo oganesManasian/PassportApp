@@ -160,7 +160,8 @@ public class OCR {
 
         // Extracting text
         startTime = SystemClock.uptimeMillis();
-        String result = extractText(bitmap); // bitmapForOCR
+        String result = extractText(bitmap); // works TODO delete
+        //String result = extractText(bitmapForOCR); // do not works TODO fix
         bitmapForOCR.recycle();
         elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
         Log.d(TAG, "Extracting text took: " + elapsedTime + "s\n");
