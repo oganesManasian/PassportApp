@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AppTest {
@@ -29,6 +30,7 @@ public class AppTest {
     private Paint m_paintTextButton;
     private Paint m_paintDescription;
 
+    private List<String> testFileFormats = Arrays.asList("png", "PNG", "jpg", "JPG");
     private List<String> testFileNames = new ArrayList<>();
     private List<RectF> testFileButtonsRect = new ArrayList<>();
 
@@ -74,9 +76,9 @@ public class AppTest {
         try {
             fileList = m_ctx.getApplicationContext().getAssets().list(TEST_DATA_PATH_APK);
             for (String filename : fileList) {
-                String pathToDataFile;
-                if (filename.endsWith("jpg")) { // Passport images
-                    pathToDataFile = TEST_DATA_PATH_DEVICE + "/" + filename;
+                String fileFormat = filename.split("\\.")[1];
+                if (testFileFormats.contains(fileFormat)) { // Passport images
+                    String pathToDataFile = TEST_DATA_PATH_DEVICE + "/" + filename;
                     // copy file from assets folder to device storage
                     if (!(new File(pathToDataFile)).exists()) {
                         InputStream in = m_ctx.getApplicationContext().getAssets().open(
@@ -85,8 +87,7 @@ public class AppTest {
                         Utils.copyFile(in, out);
                         Log.d(TAG, "Copied " + filename + " to " + TEST_DATA_DIRNAME);
                     }
-                    String testFileName = filename.split("\\.")[0];
-                    testFileNames.add(testFileName);
+                    testFileNames.add(filename);
                 }
             }
         } catch (IOException e) {
@@ -161,7 +162,8 @@ public class AppTest {
                 top += 2 * bh;
                 bottom += 2 * bh;
             }
-            drawButton(canvas, buttonRect, testFileNames.get(i), 0x92DCFE, 0x1e80B0, 255);
+            String btnName = testFileNames.get(i).split("\\.")[0];
+            drawButton(canvas, buttonRect, btnName, 0x92DCFE, 0x1e80B0, 255);
         }
     }
 
@@ -204,7 +206,8 @@ public class AppTest {
                     bottom += 2 * bh;
                     break;
             }
-            drawButton(canvas, buttonRect, testFileNames.get(i), 0x92DCFE, 0x1e80B0, 255);
+            String btnName = testFileNames.get(i).split("\\.")[0];
+            drawButton(canvas, buttonRect, btnName, 0x92DCFE, 0x1e80B0, 255);
         }
     }
 
@@ -243,8 +246,7 @@ public class AppTest {
             {
                 if (testFileButtonsRect.get(i).contains(x, y))
                 {
-                    String testFilename = testFileNames.get(i) + ".jpg";
-                    launchOCROnTestFile(testFilename);
+                    launchOCROnTestFile(testFileNames.get(i));
                     return true;
                 }
             }

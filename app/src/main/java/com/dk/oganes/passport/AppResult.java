@@ -33,6 +33,25 @@ public class AppResult {
         personalData = passportCodeProcessor.parseCode(str);
     }
 
+    public void drawPersonalData(Canvas canvas, int x, int y) {
+        if (personalData != null) {
+            for (int i = 0; i < PersonalData.fields.length; ++i) {
+                String fieldName = PersonalData.fieldNames[i];
+                String field = PersonalData.fields[i];
+                String fieldValue = personalData.getField(field);
+                if (fieldValue.equals(""))
+                    continue;
+                String line = fieldName + ": " + fieldValue;
+                canvas.drawText(line, x, y, fontPaint);
+                y += fontPaint.descent() - fontPaint.ascent();
+            }
+        }
+    }
+
+    private void drawOCRImage(Canvas canvas, int x, int y) {
+        //canvas.drawBitmap();
+    }
+
     public void drawCanvas(Canvas canvas)
     {
         canvas.drawRGB(255, 255, 255);
@@ -48,18 +67,10 @@ public class AppResult {
         y += fontPaint.descent() - fontPaint.ascent();
 
         // Draw personal data fields
-        if (personalData != null) {
-            for (int i = 0; i < PersonalData.fields.length; ++i) {
-                String fieldName = PersonalData.fieldNames[i];
-                String field = PersonalData.fields[i];
-                String fieldValue = personalData.getField(field);
-                if (fieldValue.equals(""))
-                    continue;
-                String line = fieldName + ": " + fieldValue;
-                canvas.drawText(line, x, y, fontPaint);
-                y += fontPaint.descent() - fontPaint.ascent();
-            }
-        }
+        drawPersonalData(canvas, x, y);
+
+        // Draw OCR image
+        drawOCRImage(canvas, x, y);
     }
 
     public boolean onTouch(int x, int y, int touchType) {
