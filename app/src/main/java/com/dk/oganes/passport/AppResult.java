@@ -1,19 +1,25 @@
 package com.dk.oganes.passport;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.Log;
 
 
 public class AppResult {
-    // CONST
+    private static final String TAG = "RESULT";
     private ActivityMain m_ctx;
-    private PersonalData personalData = null;
+    private PersonalData m_personalData = null;
+    private Bitmap m_recognisingImage = null;
     private Paint fontPaint;
 
-    private int textStartX = 50;
-    private int textStartY = 100;
+    private int textOffsetX = 50;
+    private int textOffsetY = 100;
+
+    private int imgOffsetX = 50;
 
     // METHODS
     public AppResult(ActivityMain ctx, int language)
@@ -30,15 +36,37 @@ public class AppResult {
 
     public void setRecognitionResult(String str) {
         PassportCodeProcessor passportCodeProcessor = new PassportCodeProcessor();
-        personalData = passportCodeProcessor.parseCode(str);
+        m_personalData = passportCodeProcessor.parseCode(str);
     }
 
-    public void drawPersonalData(Canvas canvas, int x, int y) {
-        if (personalData != null) {
+    public void setRecognisingBitmap(Bitmap bmp) {
+        if (m_recognisingImage != null)
+            m_recognisingImage.recycle();
+        m_recognisingImage = bmp.copy(bmp.getConfig(), true);
+    }
+
+    private void loadRecognitionBitmap() {
+        if (m_recognisingImage != null)
+            m_recognisingImage.recycle();
+        String OCRFilePath = m_ctx.getAppOCR().getOcrFilePath();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 1;
+        m_recognisingImage = BitmapFactory.decodeFile(OCRFilePath, options);
+    }
+
+    public int drawPersonalData(Canvas canvas, int y) {
+        int x = textOffsetX;
+        y += textOffsetY;
+
+        String IntroLine = "Recognized data:";
+        canvas.drawText(IntroLine, x, y, fontPaint);
+        y += fontPaint.descent() - fontPaint.ascent();
+
+        if (m_personalData != null) {
             for (int i = 0; i < PersonalData.fields.length; ++i) {
                 String fieldName = PersonalData.fieldNames[i];
                 String field = PersonalData.fields[i];
-                String fieldValue = personalData.getField(field);
+                String fieldValue = m_personalData.getField(field);
                 if (fieldValue.equals(""))
                     continue;
                 String line = fieldName + ": " + fieldValue;
@@ -46,10 +74,34 @@ public class AppResult {
                 y += fontPaint.descent() - fontPaint.ascent();
             }
         }
+        else {
+            Log.e(TAG, "Trying to print personal data, which is null");
+        }
+        return y;
     }
 
-    private void drawOCRImage(Canvas canvas, int x, int y) {
-        //canvas.drawBitmap();
+    private int drawOCRImage(Canvas canvas, int y) {
+        loadRecognitionBitmap();
+        if (m_recognisingImage != null) {
+            int imgW = m_recognisingImage.getWidth();
+            int imgH = m_recognisingImage.getHeight();
+
+            int scrW = canvas.getWidth();
+            int scrH = canvas.getHeight();
+            //scrH -= y; // Subtract place occupied by other data
+
+            int left = imgOffsetX;
+            int right = scrW - imgOffsetX;
+            int top = y;
+            int bottom = scrH;
+
+            Rect dst = new Rect(left, top, right, bottom);
+            canvas.drawBitmap(m_recognisingImage, null, dst, null);
+            return scrH;
+        } else {
+            Log.e(TAG, "Trying to print recognising image, which is null");
+            return y;
+        }
     }
 
     public void drawCanvas(Canvas canvas)
@@ -60,17 +112,12 @@ public class AppResult {
 
         // Draw scan button
         // TODO draw depending screen size and orientation
-        int x = textStartX;
-        int y = textStartY;
-        String IntroLine = "Recognized data:";
-        canvas.drawText(IntroLine, x, y, fontPaint);
-        y += fontPaint.descent() - fontPaint.ascent();
-
+        int y = 0;
         // Draw personal data fields
-        drawPersonalData(canvas, x, y);
+        y = drawPersonalData(canvas, y);
 
         // Draw OCR image
-        drawOCRImage(canvas, x, y);
+        y = drawOCRImage(canvas, y);
     }
 
     public boolean onTouch(int x, int y, int touchType) {

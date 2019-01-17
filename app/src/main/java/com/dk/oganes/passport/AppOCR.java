@@ -161,6 +161,10 @@ public class AppOCR {
         m_OCRFilePath = OCRFilePath;
     }
 
+    public String getOcrFilePath() {
+        return m_OCRFilePath;
+    }
+
     public void makeOCRComputations() {
         if (m_OCRFilePath == null)
         {
