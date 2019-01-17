@@ -5,13 +5,16 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Integer.max;
+
 public class PassportCodeProcessor {
     private static final String TAG = "PassportCodeProcessor";
+    private static final int EXTRA_CELLS_FOR_WHITESPACES = 10;
     /*
         Passport code structure^:
            Ptiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
            #########CbbbYYMMDDCsyymmddCppppppppppppppCX
-         */
+    */
     private static Map<String, Integer> fieldStartPositions = new HashMap<>();
     private static Map<String, Integer> fieldEndPositions = new HashMap<>();
     static {
@@ -126,6 +129,9 @@ public class PassportCodeProcessor {
     }
 
     private PersonalData extractPersonalData(String code) {
+        // Delete whitespaces from codee
+        code = code.replaceAll(" ", "");
+        Log.d(TAG, "Code without whitespaces: \n" + code);
         // Extract personal data from code
         PersonalData personalData = new PersonalData();
         for (String field : PersonalData.fields) {
@@ -139,14 +145,15 @@ public class PassportCodeProcessor {
     private String findCode(String text) {
         // Finds code in recognised text
         // TODO improve quality of finding code position
-        //String code = "";
         int startIndex = 0;
         startIndex = text.indexOf("P<", startIndex);
         //while(true)
         //    startIndex = text.indexOf("P", startIndex);
         //    char ch = text.charAt(startIndex + 1);
         //}
-        int endIndex = startIndex + codeLen + 1; // + 1 for \n
+        int endIndex = Math.min(startIndex + codeLen + 1 + EXTRA_CELLS_FOR_WHITESPACES,
+                text.length() - 1); // + 1 for \n
+
         Log.d(TAG, "start index: " + startIndex + "; end index: " + endIndex + "; length: " + text.length());
         if (endIndex <= text.length() && startIndex > -1) {
             return text.substring(startIndex, endIndex);
