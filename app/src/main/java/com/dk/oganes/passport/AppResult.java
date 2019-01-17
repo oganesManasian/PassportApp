@@ -54,7 +54,7 @@ public class AppResult {
         m_recognisingImage = BitmapFactory.decodeFile(OCRFilePath, options);
     }
 
-    public int drawPersonalData(Canvas canvas, int y) {
+    private int drawPersonalData(Canvas canvas, int y) {
         int x = textOffsetX;
         y += textOffsetY;
 

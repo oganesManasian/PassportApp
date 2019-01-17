@@ -5,8 +5,6 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.lang.Integer.max;
-
 public class PassportCodeProcessor {
     private static final String TAG = "PassportCodeProcessor";
     private static final int EXTRA_CELLS_FOR_WHITESPACES = 10;
@@ -70,6 +68,8 @@ public class PassportCodeProcessor {
         }
     }
     private String getPersonalDataFieldFromCode(String code, String field) {
+        if (code.length() < fieldEndPositions.get(field))
+            return "";
         return code.substring(fieldStartPositions.get(field),
                 fieldEndPositions.get(field));
     }
@@ -98,7 +98,7 @@ public class PassportCodeProcessor {
               fieldValue = fieldValue.replace("<", " ");
               return fieldValue;
           case "passportNumber":
-                return deleteUnnesesarySymbols(fieldValue);
+                return deleteUnnecessarySymbols(fieldValue);
           case "nationality":
               String fullCountryName2 = getFullCountryName(fieldValue);
               if (fullCountryName2.equals("Unknown country")) {
@@ -109,12 +109,16 @@ public class PassportCodeProcessor {
           case "dateOfBirth":
               return parseDate(fieldValue);
           case "sex":
-              if (fieldValue.equals("M") || fieldValue.equals("H")) {
-                  return "Male";
-              } else if(fieldValue.equals("F") || fieldValue.equals("f")){
-                  return "Female";
-              } else {
-                  return "Unknown sex identificator: " + fieldValue;
+              switch (fieldValue) {
+                  case "M":
+                  case "H":
+                  case "m":
+                      return "Male";
+                  case "F":
+                  case "f":
+                      return "Female";
+                  default:
+                      return "Unknown sex identificator: " + fieldValue;
               }
           case "passportExpirationDate":
               return parseDate(fieldValue);
@@ -122,7 +126,7 @@ public class PassportCodeProcessor {
               if(isFieldEmpty(fieldValue))
                   return "";
               else
-                  return deleteUnnesesarySymbols(fieldValue);
+                  return deleteUnnecessarySymbols(fieldValue);
           default:
               return "ERROR not handled field name";
       }
@@ -145,8 +149,9 @@ public class PassportCodeProcessor {
     private String findCode(String text) {
         // Finds code in recognised text
         // TODO improve quality of finding code position
-        int startIndex = 0;
-        startIndex = text.indexOf("P<", startIndex);
+        int startIndex = text.indexOf("P<");
+        if (startIndex == -1)
+            startIndex = text.indexOf("p<");
         //while(true)
         //    startIndex = text.indexOf("P", startIndex);
         //    char ch = text.charAt(startIndex + 1);
@@ -207,7 +212,7 @@ public class PassportCodeProcessor {
         return true;
     }
 
-    private String deleteUnnesesarySymbols(String fieldValue) {
+    private String deleteUnnecessarySymbols(String fieldValue) {
         return fieldValue.replace('<', ' ');
     }
 }
