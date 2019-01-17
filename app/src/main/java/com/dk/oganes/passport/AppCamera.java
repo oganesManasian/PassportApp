@@ -20,6 +20,7 @@ import android.view.MotionEvent;
 
 
 import java.io.File;
+import java.util.List;
 
 public class AppCamera {
     private static final String TAG = "APP_CAMERA";
@@ -69,7 +70,7 @@ public class AppCamera {
         fontPaint = new Paint();
         fontPaint.setColor(Color.BLACK);
         fontPaint.setStyle(Paint.Style.FILL);
-        fontPaint.setTextSize(40.0f);
+        fontPaint.setTextSize(60.f);
         // TODO activate left align
         //fontPaint.setTextAlign(Paint.Align.CENTER); // Moving text to the left WHY?
         fontPaint.setAntiAlias(true);
@@ -113,18 +114,23 @@ public class AppCamera {
         // Fill screen white
         canvas.drawRGB(255, 255, 255);
 
+        int scrW = canvas.getWidth();
+        int scrH = canvas.getHeight();
+
         // Draw instruction
         // TODO draw depending screen size and orientation
         int x = textStartX;
         int y = textStartY;
-        for (String line: instruction.split("\n")) {
+        // for (String line: instruction.split("\n")) {
+        //     canvas.drawText(line, x, y, fontPaint);
+        //     y += fontPaint.descent() - fontPaint.ascent();
+        // }
+        List<String> formattedInstruction = Utils.format(instruction, scrW - 2 * textStartX, fontPaint);
+        for (String line : formattedInstruction) {
             canvas.drawText(line, x, y, fontPaint);
             y += fontPaint.descent() - fontPaint.ascent();
         }
-
         // Draw scan button
-        int scrW = canvas.getWidth();
-        int scrH = canvas.getHeight();
         int scrCenterX = scrW >> 1;
         int scrCenterY = scrH >> 1;
         final float BUTTON_SCALE = 4.1f;

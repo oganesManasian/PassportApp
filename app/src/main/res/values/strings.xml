@@ -12,9 +12,12 @@
     <string name="str_scan">Scan</string>
     <string name="str_testMode">Test mode</string>
     <string name="instruction">
-        Recommendations for scanning\n
-        1) Please place your phone horizontally\nwhile taking photo\n
-        2) Focus device on passport\n
-        3) Make there were not any shadows on passport\n
+        Recommendations for scanning$
+        1) Please place your phone horizontally while taking photo$
+        2) Focus device on passport$
+        3) Make there were not any shadows on passport
     </string>
+    <string name="OCRExecutingProcessDescription">Extracting personal data</string>
+    <string name="ChooseTestFile">Please choose passport for test</string>
+
 </resources>
