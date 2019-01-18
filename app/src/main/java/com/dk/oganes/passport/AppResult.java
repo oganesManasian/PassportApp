@@ -20,6 +20,7 @@ public class AppResult {
     private int textOffsetY = 100;
 
     private int imgOffsetX = 50;
+    private int imgOffsetY = 30;
 
     // METHODS
     public AppResult(ActivityMain ctx, int language)
@@ -60,7 +61,8 @@ public class AppResult {
 
         String IntroLine = "Recognized data:";
         canvas.drawText(IntroLine, x, y, fontPaint);
-        y += fontPaint.descent() - fontPaint.ascent();
+        float fontHeight = fontPaint.descent() - fontPaint.ascent();
+        y += fontHeight;
 
         if (m_personalData != null) {
             for (int i = 0; i < PersonalData.fields.length; ++i) {
@@ -71,8 +73,9 @@ public class AppResult {
                     continue;
                 String line = fieldName + ": " + fieldValue;
                 canvas.drawText(line, x, y, fontPaint);
-                y += fontPaint.descent() - fontPaint.ascent();
+                y += fontHeight;
             }
+            y -= fontHeight;
         }
         else {
             Log.e(TAG, "Trying to print personal data, which is null");
@@ -83,17 +86,13 @@ public class AppResult {
     private int drawOCRImage(Canvas canvas, int y) {
         loadRecognitionBitmap();
         if (m_recognisingImage != null) {
-            int imgW = m_recognisingImage.getWidth();
-            int imgH = m_recognisingImage.getHeight();
-
             int scrW = canvas.getWidth();
             int scrH = canvas.getHeight();
-            //scrH -= y; // Subtract place occupied by other data
 
             int left = imgOffsetX;
             int right = scrW - imgOffsetX;
-            int top = y;
-            int bottom = scrH;
+            int top = y + imgOffsetY;
+            int bottom = scrH - imgOffsetY;
 
             Rect dst = new Rect(left, top, right, bottom);
             canvas.drawBitmap(m_recognisingImage, null, dst, null);
