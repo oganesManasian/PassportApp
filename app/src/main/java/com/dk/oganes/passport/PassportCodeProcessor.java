@@ -104,6 +104,7 @@ public class PassportCodeProcessor {
               fieldValue = toNumbers(fieldValue);
                 return deleteUnnecessarySymbols(fieldValue);
           case "nationality":
+              fieldValue = toLetters(fieldValue);
               String fullCountryName2 = getFullCountryName(fieldValue);
               if (fullCountryName2.equals("Unknown country")) {
                   return fullCountryName2 + ": " + fieldValue;
@@ -201,6 +202,7 @@ public class PassportCodeProcessor {
     }
 
     private String getFullCountryName(String countryCode) {
+        countryCode = recoverCountryCode(countryCode);
         String countryName = CountryNames.countryNames.get(countryCode);
         return (countryName == null) ? "Unknown country" : countryName;
     }
@@ -222,6 +224,12 @@ public class PassportCodeProcessor {
 
     private String deleteUnnecessarySymbols(String fieldValue) {
         return fieldValue.replace('<', ' ');
+    }
+
+    private String recoverCountryCode(String countryCode) {
+        if (countryCode.equals("TNN"))
+            return "TWN";
+        return countryCode;
     }
 
     private String toNumbers(String fieldValue) { // Found similarities between letters and numbers

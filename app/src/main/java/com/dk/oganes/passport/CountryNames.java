@@ -16,7 +16,6 @@ public class CountryNames {
         countryNames.put("TWN", "China");
         countryNames.put("CHN", "China");
         countryNames.put("ESP", "Spain");
-
         countryNames.put("BRA", "Brazil");
         countryNames.put("BGR", "Bulgaria");
         countryNames.put("ARG", "Argentina");
@@ -49,5 +48,6 @@ public class CountryNames {
         countryNames.put("SVN", "Slovenia");
         countryNames.put("SWE", "Sweden");
         countryNames.put("CHE", "Switzerland");
+        countryNames.put("UTO", "Utopia");
     }
 }
