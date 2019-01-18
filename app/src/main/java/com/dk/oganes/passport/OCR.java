@@ -131,14 +131,12 @@ public class OCR {
         return bitmap;
     }
 
-    private Bitmap PrepareImageForOCR(Bitmap bitmap) {
-        ImageProcessor imageProcessor = new ImageProcessor();
-        Bitmap grayscale = imageProcessor.grayscale(bitmap);
-        saveBitmap(grayscale, "grayscale"); // For debug
-        Bitmap binarized = imageProcessor.binarize(grayscale);
-        saveBitmap(binarized, "binarized"); // For debug
-        grayscale.recycle();
-        return binarized;
+    private Bitmap PrepareImageForOCR(Bitmap img) {
+        //return bitmap;
+        ImageProcessor imgProcessor = new ImageProcessor();
+        Bitmap preparedImg = imgProcessor.prepareImageForOCR(img);
+        saveBitmap(preparedImg, "PreparedImg by OpenCv");
+        return preparedImg;
     }
 
     public void doOCR(String OCRFilePath) {
@@ -147,22 +145,21 @@ public class OCR {
 
         //Image decoding
         startTime = SystemClock.uptimeMillis();
-        Bitmap bitmap = decodeOCRImage(OCRFilePath);
+        Bitmap img = decodeOCRImage(OCRFilePath);
         elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
         Log.d(TAG, "Decoding took: " + elapsedTime + "s\n");
 
         // Image preprocessing
         startTime = SystemClock.uptimeMillis();
-        Bitmap bitmapForOCR = PrepareImageForOCR(bitmap);
-        //  bitmap.recycle();
+        Bitmap preparedImage = PrepareImageForOCR(img);
+        //img.recycle();
         elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
         Log.d(TAG, "Image processing took: " + elapsedTime + "s\n");
 
         // Extracting text
         startTime = SystemClock.uptimeMillis();
-        String result = extractText(bitmap); // works TODO delete
-        //String result = extractText(bitmapForOCR); // do not works TODO fix
-        bitmapForOCR.recycle();
+        String result = extractText(preparedImage);
+        preparedImage.recycle();
         elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
         Log.d(TAG, "Extracting text took: " + elapsedTime + "s\n");
 

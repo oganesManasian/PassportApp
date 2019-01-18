@@ -11,6 +11,8 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.widget.Toast;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.util.Locale;
 
 // TODO delete c++ native libs
@@ -59,6 +61,16 @@ public class ActivityMain extends Activity implements View.OnTouchListener, OnCo
     // *************************************************
     // METHODS
     // *************************************************
+
+    static {
+        //System.loadLibrary("opencv_java3");
+        if (!OpenCVLoader.initDebug()) {
+            Log.e(TAG, "Can not init OpenCV");
+        } else {
+            Log.i(TAG, "OpenCV successfully inited");
+        }
+    }
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //overridePendingTransition(0, 0);
