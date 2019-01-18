@@ -75,7 +75,8 @@ public class PassportCodeProcessor {
     }
 
     private String processFieldValue(String field, String fieldValue) {
-      switch (field) {
+        fieldValue = fieldValue.toUpperCase();
+        switch (field) {
           case "passport":
               if (fieldValue.equals("P")) {
                   return "Passport";
@@ -88,6 +89,7 @@ public class PassportCodeProcessor {
               else
                   return fieldValue;
           case "issuingCountry":
+              fieldValue = toLetters(fieldValue);
               String fullCountryName1 = getFullCountryName(fieldValue);
               if (fullCountryName1.equals("Unknown country")) {
                   return fullCountryName1 + ": " + fieldValue;
@@ -95,9 +97,11 @@ public class PassportCodeProcessor {
                   return fullCountryName1;
               }
           case "name":
+              fieldValue = toLetters(fieldValue);
               fieldValue = fieldValue.replace("<", " ");
               return fieldValue;
           case "passportNumber":
+              fieldValue = toNumbers(fieldValue);
                 return deleteUnnecessarySymbols(fieldValue);
           case "nationality":
               String fullCountryName2 = getFullCountryName(fieldValue);
@@ -107,8 +111,10 @@ public class PassportCodeProcessor {
                   return fullCountryName2;
               }
           case "dateOfBirth":
+              fieldValue = toNumbers(fieldValue);
               return parseDate(fieldValue);
           case "sex":
+              fieldValue = toLetters(fieldValue);
               switch (fieldValue) {
                   case "M":
                   case "H":
@@ -121,8 +127,10 @@ public class PassportCodeProcessor {
                       return "Unknown sex identificator: " + fieldValue;
               }
           case "passportExpirationDate":
+              fieldValue = toNumbers(fieldValue);
               return parseDate(fieldValue);
           case "personalNumber":
+              fieldValue = toNumbers(fieldValue);
               if(isFieldEmpty(fieldValue))
                   return "";
               else
@@ -214,5 +222,27 @@ public class PassportCodeProcessor {
 
     private String deleteUnnecessarySymbols(String fieldValue) {
         return fieldValue.replace('<', ' ');
+    }
+
+    private String toNumbers(String fieldValue) { // Found similarities between letters and numbers
+        fieldValue = fieldValue.replaceAll("D", "0");
+        fieldValue = fieldValue.replaceAll("O", "0");
+        fieldValue = fieldValue.replaceAll("U", "0");
+        fieldValue = fieldValue.replaceAll("G", "0");
+        fieldValue = fieldValue.replaceAll("I", "1");
+        fieldValue = fieldValue.replaceAll("Z", "2");
+        fieldValue = fieldValue.replaceAll("S", "5");
+        fieldValue = fieldValue.replaceAll("F", "6");
+        return fieldValue;
+    }
+
+    private String toLetters(String fieldValue) { // Found similarities between letters and numbers
+        fieldValue = fieldValue.replaceAll("0", "O");
+        fieldValue = fieldValue.replaceAll("1", "I");
+        fieldValue = fieldValue.replaceAll("2", "Z");
+        fieldValue = fieldValue.replaceAll("5", "S");
+        fieldValue = fieldValue.replaceAll("6", "F");
+        fieldValue = fieldValue.replaceAll("8", "S");
+        return fieldValue;
     }
 }
