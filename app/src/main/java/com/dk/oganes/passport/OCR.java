@@ -115,6 +115,7 @@ public class OCR {
         int ratio = 4;
         int width;
         Bitmap bitmap;
+        // Make optimal size of image
         while(true) {
             options.inSampleSize = ratio; // 1 - means max size
             bitmap = BitmapFactory.decodeFile(OCRFilePath, options);
@@ -134,7 +135,7 @@ public class OCR {
     private Bitmap PrepareImageForOCR(Bitmap img) {
         //return bitmap;
         ImageProcessor imgProcessor = new ImageProcessor();
-        Bitmap preparedImg = imgProcessor.prepareImageForOCR(img);
+        Bitmap preparedImg = imgProcessor.prepareImageForOCR(img, MIN_IMAGE_WIDTH);
         saveBitmap(preparedImg, "PreparedImg by OpenCv");
         return preparedImg;
     }
@@ -152,7 +153,7 @@ public class OCR {
         // Image preprocessing
         startTime = SystemClock.uptimeMillis();
         Bitmap preparedImage = PrepareImageForOCR(img);
-        //img.recycle();
+        img.recycle();
         elapsedTime = (SystemClock.uptimeMillis() - startTime) / 1000;
         Log.d(TAG, "Image processing took: " + elapsedTime + "s\n");
 
