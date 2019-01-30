@@ -2,7 +2,9 @@ package com.dk.oganes.passport;
 
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PassportCodeProcessor {
@@ -15,6 +17,7 @@ public class PassportCodeProcessor {
     */
     private static Map<String, Integer> fieldStartPositions = new HashMap<>();
     private static Map<String, Integer> fieldEndPositions = new HashMap<>();
+
     static {
         fieldStartPositions.put("passport", 0);
         fieldEndPositions.put("passport", 1);
@@ -38,8 +41,9 @@ public class PassportCodeProcessor {
         fieldEndPositions.put("personalNumber", 87); // +1 for /n
     }
 
-    private int[] controlDigitPositions = {43, 53, 63, 71, 86}; // 43 is fake, made for convenience
-
+    //private int[] controlDigitPositions = {43, 53, 63, 71, 86}; // 43 is fake, made for convenience
+    private List<String> checkDigitResponsibilities = Arrays.asList("passportNumber", "dateOfBirth",
+            "passportExpirationDate", "personalNumber");
     private static final int codeLen = 88;
     public static final String CHARS_TO_DETECT = "0123456789<" +
             "abcdefghijklmnopqrstuvwxyz" +
@@ -54,10 +58,7 @@ public class PassportCodeProcessor {
         //logCodePerChar(code);
         Log.d(TAG, code);
 
-        // TODO validate
-        //boolean isRight = validate(code);
-        PersonalData personalData = extractPersonalData(code);
-        return personalData;
+        return extractPersonalData(code);
     }
 
     private void logCodePerChar(String code) {
@@ -67,6 +68,7 @@ public class PassportCodeProcessor {
             i++;
         }
     }
+
     private String getPersonalDataFieldFromCode(String code, String field) {
         if (code.length() < fieldEndPositions.get(field))
             return "";
@@ -74,71 +76,85 @@ public class PassportCodeProcessor {
                 fieldEndPositions.get(field));
     }
 
-    private String processFieldValue(String field, String fieldValue) {
+    private String processFieldValue(String code, String field, String fieldValue) {
         fieldValue = fieldValue.toUpperCase();
+        String errInfo;
         switch (field) {
-          case "passport":
-              if (fieldValue.equals("P")) {
-                  return "Passport";
-              } else {
-                  return "Unknown document" + fieldValue;
-              }
-          case "passportType":
-              if(isFieldEmpty(fieldValue))
-                  return "";
-              else
-                  return fieldValue;
-          case "issuingCountry":
-              fieldValue = toLetters(fieldValue);
-              String fullCountryName1 = getFullCountryName(fieldValue);
-              if (fullCountryName1.equals("Unknown country")) {
-                  return fullCountryName1 + ": " + fieldValue;
-              } else {
-                  return fullCountryName1;
-              }
-          case "name":
-              fieldValue = toLetters(fieldValue);
-              fieldValue = fieldValue.replace("<", " ");
-              return fieldValue;
-          case "passportNumber":
-              fieldValue = toNumbers(fieldValue);
-                return deleteUnnecessarySymbols(fieldValue);
-          case "nationality":
-              fieldValue = toLetters(fieldValue);
-              String fullCountryName2 = getFullCountryName(fieldValue);
-              if (fullCountryName2.equals("Unknown country")) {
-                  return fullCountryName2 + ": " + fieldValue;
-              } else {
-                  return fullCountryName2;
-              }
-          case "dateOfBirth":
-              fieldValue = toNumbers(fieldValue);
-              return parseDate(fieldValue);
-          case "sex":
-              fieldValue = toLetters(fieldValue);
-              switch (fieldValue) {
-                  case "M":
-                  case "H":
-                  case "m":
-                      return "Male";
-                  case "F":
-                  case "f":
-                      return "Female";
-                  default:
-                      return "Unknown sex identificator: " + fieldValue;
-              }
-          case "passportExpirationDate":
-              fieldValue = toNumbers(fieldValue);
-              return parseDate(fieldValue);
-          case "personalNumber":
-              fieldValue = toNumbers(fieldValue);
-              if(isFieldEmpty(fieldValue))
-                  return "";
-              else
-                  return deleteUnnecessarySymbols(fieldValue);
-          default:
-              return "ERROR not handled field name";
-      }
+            case "passport":
+                if (fieldValue.equals("P")) {
+                    return "Passport";
+                } else {
+                    return "Unknown document" + fieldValue;
+                }
+            case "passportType":
+                if (isFieldEmpty(fieldValue))
+                    return "";
+                else
+                    return fieldValue;
+            case "issuingCountry":
+                fieldValue = toLetters(fieldValue);
+                String fullCountryName1 = getFullCountryName(fieldValue);
+                if (fullCountryName1.equals("Unknown country")) {
+                    return fullCountryName1 + ": " + fieldValue;
+                } else {
+                    return fullCountryName1;
+                }
+            case "name":
+                fieldValue = toLetters(fieldValue);
+                fieldValue = fieldValue.replace("<", " ");
+                return fieldValue;
+            case "passportNumber":
+                fieldValue = toNumbers(fieldValue);
+                errInfo = validate(code, field, fieldValue);
+                if (errInfo.equals(""))
+                    return deleteUnnecessarySymbols(fieldValue);
+                else
+                    return fieldValue + errInfo;
+            case "nationality":
+                fieldValue = toLetters(fieldValue);
+                String fullCountryName2 = getFullCountryName(fieldValue);
+                if (fullCountryName2.equals("Unknown country")) {
+                    return fullCountryName2 + ": " + fieldValue;
+                } else {
+                    return fullCountryName2;
+                }
+            case "dateOfBirth":
+                fieldValue = toNumbers(fieldValue);
+                errInfo = validate(code, field, fieldValue);
+                if (errInfo.equals(""))
+                    return parseDate(fieldValue);
+                else
+                    return fieldValue + errInfo;
+            case "sex":
+                fieldValue = toLetters(fieldValue);
+                switch (fieldValue) {
+                    case "M":
+                    case "H":
+                    case "m":
+                        return "Male";
+                    case "F":
+                    case "f":
+                        return "Female";
+                    default:
+                        return "Unknown sex identificator: " + fieldValue;
+                }
+            case "passportExpirationDate":
+                fieldValue = toNumbers(fieldValue);
+                errInfo = validate(code, field, fieldValue);
+                if (errInfo.equals(""))
+                    return parseDate(fieldValue);
+                else
+                    return fieldValue + errInfo;
+            case "personalNumber":
+                fieldValue = toNumbers(fieldValue);
+                errInfo = validate(code, field, fieldValue);
+                if (errInfo.equals(""))
+                    return deleteUnnecessarySymbols(fieldValue);
+                else
+                    return fieldValue + errInfo;
+            default:
+                return "ERROR not handled field name";
+        }
     }
 
     private PersonalData extractPersonalData(String code) {
@@ -149,11 +165,13 @@ public class PassportCodeProcessor {
         PersonalData personalData = new PersonalData();
         for (String field : PersonalData.fields) {
             String fieldValue = getPersonalDataFieldFromCode(code, field);
-            fieldValue = processFieldValue(field, fieldValue);
+            fieldValue = processFieldValue(code, field, fieldValue);
+            //String errInfo = validate(code, field, fieldValue);
             personalData.fillField(field, fieldValue);
         }
         return personalData;
     }
+
 
     private String findCode(String text) {
         // Finds code in recognised text
@@ -171,31 +189,40 @@ public class PassportCodeProcessor {
         Log.d(TAG, "start index: " + startIndex + "; end index: " + endIndex + "; length: " + text.length());
         if (endIndex <= text.length() && startIndex > -1) {
             return text.substring(startIndex, endIndex);
-        }
-        else {
+        } else {
             return null;
         }
     }
 
-    private boolean validate(String code) {
-        // Validate found code using check digits
-        // TODO add checking final check digit
-        boolean res = true;
-        for( int i = 0; i < controlDigitPositions.length; i++) {
-            int realDigit = (int)code.charAt(controlDigitPositions[i + 1]);
-            String substr = code.substring(controlDigitPositions[i] + 1, controlDigitPositions[i + 1]);
-            int calculatedDigit = calculateCheckDigit(substr);
-            res &= (realDigit == calculatedDigit);
+    private String validate(String code, String field, String fieldValue) {
+        if (!checkDigitResponsibilities.contains(field))
+            return "";
+
+        int checkDigitPos = fieldEndPositions.get(field);
+        int checkDigit = Character.getNumericValue(code.charAt(checkDigitPos));
+        int calculatedDigit = calculateCheckDigit(fieldValue);
+        if (calculatedDigit == checkDigit)
+            return "";
+        else {
+            Log.d(TAG, "Check digit: " + checkDigit + " Calculated digit: " + calculatedDigit);
+            return " - Check digit does not match";
         }
-        return res;
     }
 
     private int calculateCheckDigit(String str) {
         int checkDigit = 0;
         int[] weight = {7, 3, 1};
-
-        for(int i = 0; i < str.length(); i++){
-            checkDigit += (int)str.charAt(i) * weight[i % 3];
+        int codePoint, value;
+        for (int i = 0; i < str.length(); i++) {
+            codePoint = str.charAt(i);
+            if (Character.isDigit(codePoint)) {
+                value = Character.getNumericValue(codePoint);
+            } else if (codePoint == (int)'<') {
+                value = 0;
+            } else {
+                value = (codePoint - (int) 'A' + 10);
+            }
+            checkDigit += value * weight[i % 3];
         }
         checkDigit %= 10;
         return checkDigit;
@@ -208,9 +235,19 @@ public class PassportCodeProcessor {
     }
 
     private String parseDate(String date) {
-        date = date.substring(4,6) + "." +
-                date.substring(2, 4) + "." +
-                date.substring(0, 2);
+        String day = date.substring(4, 6);
+        String month = date.substring(2, 4);
+        String year = date.substring(0, 2);
+
+        String errInfo;
+        if (Integer.parseInt(day) > 31 ||
+                Integer.parseInt(month) > 12) {
+            errInfo = " - Incorrect date";
+        } else {
+            errInfo = "";
+        }
+
+        date = day + "." + month + "." + year + errInfo;
         return date;
     }
 
@@ -241,6 +278,7 @@ public class PassportCodeProcessor {
         fieldValue = fieldValue.replaceAll("Z", "2");
         fieldValue = fieldValue.replaceAll("S", "5");
         fieldValue = fieldValue.replaceAll("F", "6");
+        fieldValue = fieldValue.replaceAll("B", "8");
         return fieldValue;
     }
 
@@ -248,6 +286,7 @@ public class PassportCodeProcessor {
         fieldValue = fieldValue.replaceAll("0", "O");
         fieldValue = fieldValue.replaceAll("1", "I");
         fieldValue = fieldValue.replaceAll("2", "Z");
+        fieldValue = fieldValue.replaceAll("3", "B");
         fieldValue = fieldValue.replaceAll("5", "S");
         fieldValue = fieldValue.replaceAll("6", "F");
         fieldValue = fieldValue.replaceAll("8", "S");
