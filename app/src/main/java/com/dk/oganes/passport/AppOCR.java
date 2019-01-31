@@ -59,7 +59,18 @@ public class AppOCR {
         m_scrCenterX = m_scrW >> 1;
         m_scrCenterY = m_scrH >> 1;
         dimMin = (m_scrW < m_scrH) ? m_scrW : m_scrH;
-        dimMax = (m_scrW > m_scrH) ? m_scrW : m_scrH;
+        dimMax = (m_scrW < m_scrH) ? m_scrH : m_scrW;
+
+        float textSize = m_scrW * 0.09f;
+        float instructionWidth = m_paintDescription.measureText(m_processDescription);
+        while (instructionWidth > m_scrW) {
+            textSize -= 1.0f;
+            m_paintDescription.setTextSize(textSize);
+            instructionWidth = m_paintDescription.measureText(m_processDescription);
+        }
+        Log.d(TAG, "Text size" + textSize);
+
+        m_paintDescription.setTextSize(textSize);
     }
 
     public void onOrientation(int ori) {

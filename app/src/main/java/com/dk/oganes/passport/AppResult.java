@@ -14,7 +14,15 @@ public class AppResult {
     private ActivityMain m_ctx;
     private PersonalData m_personalData = null;
     private Bitmap m_recognisingImage = null;
-    private Paint fontPaint;
+    private Paint m_paintPersonalData;
+
+    private int m_oriChanged;
+    private int m_scrW;
+    private int m_scrH;
+    private int dimMax;
+    private int dimMin;
+    private int m_scrCenterX;
+    private int m_scrCenterY;
 
     private int textOffsetX = 50;
     private int textOffsetY = 100;
@@ -27,12 +35,14 @@ public class AppResult {
     {
         m_ctx = ctx;
 
-        fontPaint = new Paint();
-        fontPaint.setColor(Color.BLACK);
-        fontPaint.setStyle(Paint.Style.FILL);
-        fontPaint.setTextSize(40f);
+        m_oriChanged = 1;
+
+        m_paintPersonalData = new Paint();
+        m_paintPersonalData.setColor(Color.BLACK);
+        m_paintPersonalData.setStyle(Paint.Style.FILL);
+        m_paintPersonalData.setTextSize(40f);
         //fontPaint.setTextAlign(Paint.Align.CENTER); // Moving text to the left WHY?
-        fontPaint.setAntiAlias(true);
+        m_paintPersonalData.setAntiAlias(true);
     }
 
     public void setRecognitionResult(String str) {
@@ -60,8 +70,8 @@ public class AppResult {
         y += textOffsetY;
 
         String IntroLine = "Recognized data:";
-        canvas.drawText(IntroLine, x, y, fontPaint);
-        float fontHeight = fontPaint.descent() - fontPaint.ascent();
+        canvas.drawText(IntroLine, x, y, m_paintPersonalData);
+        float fontHeight = m_paintPersonalData.descent() - m_paintPersonalData.ascent();
         y += fontHeight;
 
         if (m_personalData != null) {
@@ -72,7 +82,7 @@ public class AppResult {
                 if (fieldValue.equals(""))
                     continue;
                 String line = fieldName + ": " + fieldValue;
-                canvas.drawText(line, x, y, fontPaint);
+                canvas.drawText(line, x, y, m_paintPersonalData);
                 y += fontHeight;
             }
             y -= fontHeight;
@@ -86,21 +96,40 @@ public class AppResult {
     private int drawOCRImage(Canvas canvas, int y) {
         loadRecognitionBitmap();
         if (m_recognisingImage != null) {
-            int scrW = canvas.getWidth();
-            int scrH = canvas.getHeight();
-
             int left = imgOffsetX;
-            int right = scrW - imgOffsetX;
+            int right = m_scrW - imgOffsetX;
             int top = y + imgOffsetY;
-            int bottom = scrH - imgOffsetY;
+            int bottom = m_scrH - imgOffsetY;
 
             Rect dst = new Rect(left, top, right, bottom);
             canvas.drawBitmap(m_recognisingImage, null, dst, null);
-            return scrH;
+            return m_scrH;
         } else {
             Log.e(TAG, "Trying to print recognising image, which is null");
             return y;
         }
+    }
+
+    private void acceptNewScreen(Canvas canvas) {
+        m_scrW = canvas.getWidth();
+        m_scrH = canvas.getHeight();
+
+        m_scrCenterX = m_scrW >> 1;
+        m_scrCenterY = m_scrH >> 1;
+        dimMin = (m_scrW < m_scrH) ? m_scrW : m_scrH;
+        dimMax = (m_scrW > m_scrH) ? m_scrH : m_scrW;
+
+        float textSize = m_scrW * 0.09f;
+        if (textSize < 20.0f)
+            textSize = 20.0f;
+        if (textSize > 40.0f)
+            textSize = 40.0f;
+        m_paintPersonalData.setTextSize(textSize);
+    }
+
+    public void onOrientation(int ori) {
+        Log.d(TAG, "New orientation");
+        m_oriChanged = 1;
     }
 
     public void drawCanvas(Canvas canvas)
@@ -109,9 +138,15 @@ public class AppResult {
         // Move canvas
         //canvas.translate(padX, padY);
 
+        if (m_oriChanged == 1) {
+            m_oriChanged = 0;
+            acceptNewScreen(canvas);
+        }
+
         // Draw scan button
         // TODO draw depending screen size and orientation
         int y = 0;
+
         // Draw personal data fields
         y = drawPersonalData(canvas, y);
 

@@ -38,16 +38,26 @@ public class AppCamera {
     private Paint m_paintRectButton;
     private Paint m_paintTextButton;
     private String instruction;
-    private Paint fontPaint;
+    private Paint m_paintInstruction;
+
+    private int m_oriChanged;
+    private int m_scrW;
+    private int m_scrH;
+    private int dimMax;
+    private int dimMin;
+    private int m_scrCenterX;
+    private int m_scrCenterY;
+
     private int textStartX = 50;
     private int textStartY = 100;
 
     private int pushCounter = 0;
     private boolean testMode = false;
 
-    // METHODS
     public AppCamera(ActivityMain ctx, int language){
         m_ctx = ctx;
+
+        m_oriChanged = 1;
 
         //m_imagePath = new File(m_ctx.getFilesDir(), "images"); // Save in app private dir
         m_imagePath = m_ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // Save in public dir
@@ -67,13 +77,11 @@ public class AppCamera {
         m_paintTextButton.setTextAlign(Paint.Align.CENTER);
         m_paintTextButton.setAntiAlias(true);
 
-        fontPaint = new Paint();
-        fontPaint.setColor(Color.BLACK);
-        fontPaint.setStyle(Paint.Style.FILL);
-        fontPaint.setTextSize(60.f);
-        // TODO activate left align
-        //fontPaint.setTextAlign(Paint.Align.CENTER); // Moving text to the left WHY?
-        fontPaint.setAntiAlias(true);
+        m_paintInstruction = new Paint();
+        m_paintInstruction.setColor(Color.BLACK);
+        m_paintInstruction.setStyle(Paint.Style.FILL);
+        m_paintInstruction.setTextSize(60.f);
+        m_paintInstruction.setAntiAlias(true);
 
         // Load name for scan button
         Resources res = ctx.getResources();
@@ -89,6 +97,7 @@ public class AppCamera {
 
     private void dispatchTakePictureIntent() {
         try {
+            Log.d(TAG, "Image path:" + m_imagePath.toString());
             Utils.prepareDirectory(m_imagePath.toString());
 
             // Create temp file for ocr file
@@ -109,49 +118,66 @@ public class AppCamera {
         }
     }
 
+    private void acceptNewScreen(Canvas canvas) {
+        m_scrW = canvas.getWidth();
+        m_scrH = canvas.getHeight();
+
+        m_scrCenterX = m_scrW >> 1;
+        m_scrCenterY = m_scrH >> 1;
+        dimMin = (m_scrW > m_scrH) ? m_scrH : m_scrW;
+        dimMax = (m_scrW > m_scrH) ? m_scrW : m_scrH;
+
+        m_paintTextButton.setTextSize(dimMax * 0.02f);
+    }
+
+    public void onOrientation(int ori) {
+        Log.d(TAG, "New orientation");
+        m_oriChanged = 1;
+    }
+
     public void drawCanvas(Canvas canvas)
     {
         // Fill screen white
         canvas.drawRGB(255, 255, 255);
 
-        int scrW = canvas.getWidth();
-        int scrH = canvas.getHeight();
+        if (m_oriChanged == 1) {
+            m_oriChanged = 0;
+            acceptNewScreen(canvas);
+        }
 
         // Draw instruction
         // TODO draw depending screen size and orientation
         int x = textStartX;
         int y = textStartY;
         // for (String line: instruction.split("\n")) {
-        //     canvas.drawText(line, x, y, fontPaint);
-        //     y += fontPaint.descent() - fontPaint.ascent();
+        //     canvas.drawText(line, x, y, m_paintInstruction);
+        //     y += m_paintInstruction.descent() - m_paintInstruction.ascent();
         // }
-        List<String> formattedInstruction = Utils.format(instruction, scrW - 2 * textStartX, fontPaint);
+        List<String> formattedInstruction = Utils.format(instruction, m_scrW - 2 * textStartX, m_paintInstruction);
         for (String line : formattedInstruction) {
-            canvas.drawText(line, x, y, fontPaint);
-            y += fontPaint.descent() - fontPaint.ascent();
+            canvas.drawText(line, x, y, m_paintInstruction);
+            y += m_paintInstruction.descent() - m_paintInstruction.ascent();
         }
+
         // Draw scan button
-        int scrCenterX = scrW >> 1;
-        int scrCenterY = scrH >> 1;
         final float BUTTON_SCALE = 4.1f;
         final float BUTTON_W_H_RATIO = 0.3f;
-        int dimMin = (scrW < scrH)? scrW: scrH;
         float appleRadiusBase = (float)dimMin * 0.09f;
         int bw = (int)(appleRadiusBase * BUTTON_SCALE);
         int bh = (int)(bw * BUTTON_W_H_RATIO);
         int bwHalf = (bw >> 1);
 
-        if (scrH > scrW) { // vertical buttons layout
-            m_rectBtnScan.set(scrCenterX - bwHalf, scrH - bh * 2, scrCenterX + bwHalf, scrH - bh);
-            m_rectBtnTestMode.set(scrCenterX - bwHalf, scrH - bh * 4, scrCenterX + bwHalf, scrH - bh * 3);
+        if (m_scrH > m_scrW) { // vertical buttons layout
+            m_rectBtnScan.set(m_scrCenterX - bwHalf, m_scrH - bh * 2, m_scrCenterX + bwHalf, m_scrH - bh);
+            m_rectBtnTestMode.set(m_scrCenterX - bwHalf, m_scrH - bh * 4, m_scrCenterX + bwHalf, m_scrH - bh * 3);
         } else { // horizontal buttons layout
             if (testMode) {
-                m_rectBtnScan.set(scrCenterX - bw, scrH - bh, scrCenterX, scrH);
-                m_rectBtnTestMode.set(scrCenterX, scrH - bh, scrCenterX + bw, scrH);
+                m_rectBtnScan.set(m_scrCenterX - bw, m_scrH - bh, m_scrCenterX, m_scrH);
+                m_rectBtnTestMode.set(m_scrCenterX, m_scrH - bh, m_scrCenterX + bw, m_scrH);
                 m_rectBtnScan.offset(-bh * 0.5f, 0.0f);
                 m_rectBtnTestMode.offset(+bh * 0.5f, 0.0f);
             } else {
-                m_rectBtnScan.set(scrCenterX - bwHalf, scrH - bh, scrCenterX + bwHalf, scrH);
+                m_rectBtnScan.set(m_scrCenterX - bwHalf, m_scrH - bh, m_scrCenterX + bwHalf, m_scrH);
                 m_rectBtnTestMode.set(-1000, -1000, -500, -500);
             }
         }
