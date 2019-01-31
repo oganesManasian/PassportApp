@@ -136,7 +136,7 @@ public class OCR {
         //return bitmap;
         ImageProcessor imgProcessor = new ImageProcessor();
         Bitmap preparedImg = imgProcessor.prepareImageForOCR(img, MIN_IMAGE_WIDTH);
-        saveBitmap(preparedImg, "PreparedImg by OpenCv");
+        //saveBitmap(preparedImg, "PreparedImg by OpenCv");
         return preparedImg;
     }
 
